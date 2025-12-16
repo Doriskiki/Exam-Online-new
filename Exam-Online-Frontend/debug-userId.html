@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UserId 调试工具</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .section {
+            background: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h2 {
+            color: #409EFF;
+            margin-top: 0;
+        }
+        button {
+            background: #409EFF;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        button:hover {
+            background: #66b1ff;
+        }
+        button.danger {
+            background: #F56C6C;
+        }
+        button.danger:hover {
+            background: #f78989;
+        }
+        pre {
+            background: #f4f4f5;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+            border-left: 4px solid #409EFF;
+        }
+        .success {
+            color: #67C23A;
+            font-weight: bold;
+        }
+        .error {
+            color: #F56C6C;
+            font-weight: bold;
+        }
+        .warning {
+            color: #E6A23C;
+            font-weight: bold;
+        }
+        input {
+            padding: 8px;
+            border: 1px solid #dcdfe6;
+            border-radius: 4px;
+            width: 200px;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 UserId 调试工具</h1>
+    
+    <div class="section">
+        <h2>1. 检查 localStorage</h2>
+        <button onclick="checkLocalStorage()">检查 localStorage</button>
+        <button class="danger" onclick="clearLocalStorage()">清除 localStorage</button>
+        <pre id="localStorageResult">点击按钮查看结果...</pre>
+    </div>
+
+    <div class="section">
+        <h2>2. 测试 checkToken 接口</h2>
+        <button onclick="testCheckToken()">测试 checkToken</button>
+        <pre id="checkTokenResult">点击按钮查看结果...</pre>
+    </div>
+
+    <div class="section">
+        <h2>3. 测试 getCurrentUser 接口</h2>
+        <button onclick="testGetCurrentUser()">测试 getCurrentUser</button>
+        <pre id="getCurrentUserResult">点击按钮查看结果...</pre>
+    </div>
+
+    <div class="section">
+        <h2>4. 手动设置 userId</h2>
+        <input type="text" id="manualUserId" placeholder="输入用户ID">
+        <button onclick="setManualUserId()">设置 userId</button>
+        <pre id="manualResult">输入用户ID并点击按钮...</pre>
+    </div>
+
+    <div class="section">
+        <h2>5. 完整诊断</h2>
+        <button onclick="fullDiagnosis()">运行完整诊断</button>
+        <pre id="diagnosisResult">点击按钮运行诊断...</pre>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8888';
+
+        function checkLocalStorage() {
+            const result = document.getElementById('localStorageResult');
+            const data = {
+                userId: localStorage.getItem('userId'),
+                authorization: localStorage.getItem('authorization'),
+                allKeys: Object.keys(localStorage)
+            };
+            
+            let html = '<span class="success">✓ localStorage 内容：</span>\n\n';
+            html += JSON.stringify(data, null, 2);
+            
+            if (!data.userId) {
+                html += '\n\n<span class="error">✗ 警告：userId 不存在！</span>';
+            } else {
+                html += '\n\n<span class="success">✓ userId 存在：' + data.userId + '</span>';
+            }
+            
+            if (!data.authorization) {
+                html += '\n<span class="error">✗ 警告：authorization 不存在！请先登录</span>';
+            } else {
+                html += '\n<span class="success">✓ authorization 存在</span>';
+            }
+            
+            result.innerHTML = html;
+        }
+
+        function clearLocalStorage() {
+            if (confirm('确定要清除所有 localStorage 数据吗？清除后需要重新登录。')) {
+                localStorage.clear();
+                document.getElementById('localStorageResult').innerHTML = 
+                    '<span class="success">✓ localStorage 已清除！请重新登录。</span>';
+            }
+        }
+
+        async function testCheckToken() {
+            const result = document.getElementById('checkTokenResult');
+            const token = localStorage.getItem('authorization');
+            
+            if (!token) {
+                result.innerHTML = '<span class="error">✗ 错误：未找到 authorization token，请先登录！</span>';
+                return;
+            }
+
+            try {
+                result.innerHTML = '正在请求 checkToken 接口...';
+                
+                const response = await fetch(`${API_BASE}/common/checkToken`, {
+                    method: 'GET',
+                    headers: {
+                        'authorization': token
+                    }
+                });
+                
+                const data = await response.json();
+                
+                let html = '<span class="success">✓ checkToken 响应：</span>\n\n';
+                html += JSON.stringify(data, null, 2);
+                
+                if (data.code === 200 && data.data) {
+                    const userId = data.data.userId || data.data.id;
+                    if (userId) {
+                        html += '\n\n<span class="success">✓ 找到 userId：' + userId + '</span>';
+                        html += '\n<span class="warning">建议：将此 ID 保存到 localStorage</span>';
+                    } else {
+                        html += '\n\n<span class="error">✗ 警告：响应中没有 userId 或 id 字段！</span>';
+                        html += '\n可用字段：' + Object.keys(data.data).join(', ');
+                    }
+                } else {
+                    html += '\n\n<span class="error">✗ 请求失败或返回错误</span>';
+                }
+                
+                result.innerHTML = html;
+            } catch (error) {
+                result.innerHTML = '<span class="error">✗ 请求失败：' + error.message + '</span>';
+            }
+        }
+
+        async function testGetCurrentUser() {
+            const result = document.getElementById('getCurrentUserResult');
+            const token = localStorage.getItem('authorization');
+            
+            if (!token) {
+                result.innerHTML = '<span class="error">✗ 错误：未找到 authorization token，请先登录！</span>';
+                return;
+            }
+
+            try {
+                result.innerHTML = '正在请求 getCurrentUser 接口...';
+                
+                const response = await fetch(`${API_BASE}/common/getCurrentUser`, {
+                    method: 'GET',
+                    headers: {
+                        'authorization': token
+                    }
+                });
+                
+                const data = await response.json();
+                
+                let html = '<span class="success">✓ getCurrentUser 响应：</span>\n\n';
+                html += JSON.stringify(data, null, 2);
+                
+                if (data.code === 200 && data.data) {
+                    const userId = data.data.userId || data.data.id;
+                    if (userId) {
+                        html += '\n\n<span class="success">✓ 找到 userId：' + userId + '</span>';
+                    } else {
+                        html += '\n\n<span class="error">✗ 警告：响应中没有 userId 或 id 字段！</span>';
+                        html += '\n可用字段：' + Object.keys(data.data).join(', ');
+                    }
+                } else {
+                    html += '\n\n<span class="error">✗ 请求失败或返回错误</span>';
+                }
+                
+                result.innerHTML = html;
+            } catch (error) {
+                result.innerHTML = '<span class="error">✗ 请求失败：' + error.message + '</span>';
+            }
+        }
+
+        function setManualUserId() {
+            const userId = document.getElementById('manualUserId').value;
+            const result = document.getElementById('manualResult');
+            
+            if (!userId) {
+                result.innerHTML = '<span class="error">✗ 请输入用户ID</span>';
+                return;
+            }
+            
+            localStorage.setItem('userId', userId);
+            result.innerHTML = '<span class="success">✓ 已设置 userId = ' + userId + '</span>\n\n现在可以尝试人脸注册了！';
+        }
+
+        async function fullDiagnosis() {
+            const result = document.getElementById('diagnosisResult');
+            result.innerHTML = '正在运行完整诊断...\n\n';
+            
+            let report = '=== 完整诊断报告 ===\n\n';
+            
+            // 1. 检查 localStorage
+            report += '1. localStorage 检查：\n';
+            const userId = localStorage.getItem('userId');
+            const token = localStorage.getItem('authorization');
+            report += `   userId: ${userId || '❌ 不存在'}\n`;
+            report += `   authorization: ${token ? '✓ 存在' : '❌ 不存在'}\n\n`;
+            
+            if (!token) {
+                report += '❌ 诊断失败：未登录，请先登录系统！\n';
+                result.innerHTML = '<span class="error">' + report + '</span>';
+                return;
+            }
+            
+            // 2. 测试 checkToken
+            report += '2. checkToken 接口测试：\n';
+            try {
+                const checkTokenResp = await fetch(`${API_BASE}/common/checkToken`, {
+                    headers: { 'authorization': token }
+                });
+                const checkTokenData = await checkTokenResp.json();
+                
+                if (checkTokenData.code === 200) {
+                    const userIdFromCheck = checkTokenData.data.userId || checkTokenData.data.id;
+                    report += `   状态: ✓ 成功\n`;
+                    report += `   userId: ${userIdFromCheck || '❌ 未找到'}\n`;
+                    report += `   可用字段: ${Object.keys(checkTokenData.data).join(', ')}\n\n`;
+                } else {
+                    report += `   状态: ❌ 失败 (code: ${checkTokenData.code})\n\n`;
+                }
+            } catch (error) {
+                report += `   状态: ❌ 请求失败 - ${error.message}\n\n`;
+            }
+            
+            // 3. 测试 getCurrentUser
+            report += '3. getCurrentUser 接口测试：\n';
+            try {
+                const getCurrentUserResp = await fetch(`${API_BASE}/common/getCurrentUser`, {
+                    headers: { 'authorization': token }
+                });
+                const getCurrentUserData = await getCurrentUserResp.json();
+                
+                if (getCurrentUserData.code === 200) {
+                    const userIdFromCurrent = getCurrentUserData.data.userId || getCurrentUserData.data.id;
+                    report += `   状态: ✓ 成功\n`;
+                    report += `   userId: ${userIdFromCurrent || '❌ 未找到'}\n`;
+                    report += `   可用字段: ${Object.keys(getCurrentUserData.data).join(', ')}\n\n`;
+                } else {
+                    report += `   状态: ❌ 失败 (code: ${getCurrentUserData.code})\n\n`;
+                }
+            } catch (error) {
+                report += `   状态: ❌ 请求失败 - ${error.message}\n\n`;
+            }
+            
+            // 4. 给出建议
+            report += '=== 诊断建议 ===\n\n';
+            if (!userId) {
+                report += '❌ 问题：localStorage 中没有 userId\n';
+                report += '解决方案：\n';
+                report += '  1. 清除 localStorage 并重新登录\n';
+                report += '  2. 或者使用上面的"手动设置 userId"功能\n';
+            } else {
+                report += '✓ localStorage 中有 userId，可以尝试人脸注册\n';
+            }
+            
+            result.innerHTML = '<pre>' + report + '</pre>';
+        }
+
+        // 页面加载时自动检查
+        window.onload = function() {
+            checkLocalStorage();
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>人脸识别测试页面</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 32px;
+        }
+        
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        
+        .section h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 24px;
+        }
+        
+        .video-container {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        
+        video {
+            width: 100%;
+            max-width: 640px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        
+        button {
+            padding: 12px 30px;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+        
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #218838;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #c82333;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4);
+        }
+        
+        .input-group {
+            margin: 15px 0;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: bold;
+        }
+        
+        .input-group input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        
+        .input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        
+        .result.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        
+        .result.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        
+        .result.info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        
+        .status {
+            text-align: center;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        
+        .status.online {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status.offline {
+            background: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎭 人脸识别测试系统</h1>
+        
+        <div id="serviceStatus" class="status offline">
+            服务状态: 检查中...
+        </div>
+        
+        <!-- 摄像头区域 -->
+        <div class="section">
+            <h2>📹 摄像头</h2>
+            <div class="video-container">
+                <video id="video" autoplay></video>
+            </div>
+            <div class="controls">
+                <button class="btn-primary" onclick="startCamera()">打开摄像头</button>
+                <button class="btn-danger" onclick="stopCamera()">关闭摄像头</button>
+            </div>
+        </div>
+        
+        <!-- 人脸检测 -->
+        <div class="section">
+            <h2>🔍 人脸检测</h2>
+            <div class="controls">
+                <button class="btn-primary" onclick="detectFace()">检测人脸</button>
+            </div>
+            <div id="detectResult"></div>
+        </div>
+        
+        <!-- 人脸注册 -->
+        <div class="section">
+            <h2>📝 人脸注册</h2>
+            <div class="input-group">
+                <label>用户ID:</label>
+                <input type="text" id="registerUserId" placeholder="例如: 123" value="123">
+            </div>
+            <div class="input-group">
+                <label>用户名:</label>
+                <input type="text" id="registerUserName" placeholder="例如: 张三" value="张三">
+            </div>
+            <div class="controls">
+                <button class="btn-success" onclick="registerFace()">注册人脸</button>
+            </div>
+            <div id="registerResult"></div>
+        </div>
+        
+        <!-- 人脸识别 -->
+        <div class="section">
+            <h2>🎯 人脸识别</h2>
+            <div class="input-group">
+                <label>相似度阈值 (0-1):</label>
+                <input type="number" id="threshold" min="0" max="1" step="0.1" value="0.5">
+            </div>
+            <div class="controls">
+                <button class="btn-primary" onclick="recognizeFace()">识别人脸</button>
+            </div>
+            <div id="recognizeResult"></div>
+        </div>
+    </div>
+
+    <script>
+        // 如果要测试Python服务，使用 http://localhost:5000
+        // 如果要测试Java后端，使用 http://localhost:8888
+        const API_BASE = 'http://localhost:5000';  // Python微服务地址
+        let video = document.getElementById('video');
+        let stream = null;
+
+        // 检查服务状态
+        async function checkServiceStatus() {
+            try {
+                const response = await fetch(`${API_BASE}/health`);
+                const data = await response.json();
+                if (data.status === 'ok') {
+                    document.getElementById('serviceStatus').className = 'status online';
+                    document.getElementById('serviceStatus').textContent = '服务状态: ✅ 在线';
+                } else {
+                    throw new Error('服务异常');
+                }
+            } catch (error) {
+                document.getElementById('serviceStatus').className = 'status offline';
+                document.getElementById('serviceStatus').textContent = '服务状态: ❌ 离线';
+            }
+        }
+
+        // 启动摄像头
+        async function startCamera() {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { width: 640, height: 480 } 
+                });
+                video.srcObject = stream;
+                showResult('detectResult', '摄像头已启动', 'success');
+            } catch (error) {
+                showResult('detectResult', '无法访问摄像头: ' + error.message, 'error');
+            }
+        }
+
+        // 关闭摄像头
+        function stopCamera() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                video.srcObject = null;
+                showResult('detectResult', '摄像头已关闭', 'info');
+            }
+        }
+
+        // 捕获当前帧
+        function captureFrame() {
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0);
+            return canvas.toDataURL('image/jpeg');
+        }
+
+        // 显示结果
+        function showResult(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.className = `result ${type}`;
+            element.textContent = typeof message === 'object' ? 
+                JSON.stringify(message, null, 2) : message;
+        }
+
+        // 人脸检测
+        async function detectFace() {
+            try {
+                const imageBase64 = captureFrame();
+                showResult('detectResult', '正在检测...', 'info');
+                
+                const response = await fetch(`${API_BASE}/api/face/detect`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ image: imageBase64 })
+                });
+                
+                const result = await response.json();
+                if (result.success) {
+                    showResult('detectResult', 
+                        `检测成功！\n检测到 ${result.count} 张人脸\n详细信息: ${JSON.stringify(result, null, 2)}`, 
+                        'success');
+                } else {
+                    showResult('detectResult', '检测失败: ' + result.message, 'error');
+                }
+            } catch (error) {
+                showResult('detectResult', '请求失败: ' + error.message, 'error');
+            }
+        }
+
+        // 人脸注册
+        async function registerFace() {
+            try {
+                const userId = document.getElementById('registerUserId').value;
+                const userName = document.getElementById('registerUserName').value;
+                
+                if (!userId || !userName) {
+                    showResult('registerResult', '请填写用户ID和用户名', 'error');
+                    return;
+                }
+                
+                const imageBase64 = captureFrame();
+                showResult('registerResult', '正在注册...', 'info');
+                
+                const response = await fetch(`${API_BASE}/api/face/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        userId: userId,
+                        userName: userName,
+                        image: imageBase64 
+                    })
+                });
+                
+                const result = await response.json();
+                if (result.success) {
+                    showResult('registerResult', 
+                        `注册成功！\n用户: ${result.userName} (ID: ${result.userId})`, 
+                        'success');
+                } else {
+                    showResult('registerResult', '注册失败: ' + result.message, 'error');
+                }
+            } catch (error) {
+                showResult('registerResult', '请求失败: ' + error.message, 'error');
+            }
+        }
+
+        // 人脸识别
+        async function recognizeFace() {
+            try {
+                const threshold = parseFloat(document.getElementById('threshold').value);
+                const imageBase64 = captureFrame();
+                showResult('recognizeResult', '正在识别...', 'info');
+                
+                const response = await fetch(`${API_BASE}/api/face/recognize`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        image: imageBase64,
+                        threshold: threshold
+                    })
+                });
+                
+                const result = await response.json();
+                if (result.success && result.matched) {
+                    showResult('recognizeResult', 
+                        `识别成功！\n用户: ${result.userName} (ID: ${result.userId})\n相似度: ${(result.similarity * 100).toFixed(2)}%`, 
+                        'success');
+                } else if (result.success) {
+                    showResult('recognizeResult', 
+                        `未找到匹配的人脸\n最高相似度: ${(result.similarity * 100).toFixed(2)}%`, 
+                        'info');
+                } else {
+                    showResult('recognizeResult', '识别失败: ' + result.message, 'error');
+                }
+            } catch (error) {
+                showResult('recognizeResult', '请求失败: ' + error.message, 'error');
+            }
+        }
+
+        // 页面加载时检查服务状态
+        checkServiceStatus();
+        setInterval(checkServiceStatus, 5000);  // 每5秒检查一次
+    </script>
+</body>
+</html>
