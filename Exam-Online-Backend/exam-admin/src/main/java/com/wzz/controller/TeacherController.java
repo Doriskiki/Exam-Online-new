@@ -10,6 +10,7 @@ import com.wzz.Util.OSSUtil;
 import com.wzz.Util.RedisUtil;
 import com.wzz.Util.SaltEncryption;
 import com.wzz.Util.TokenUtils;
+import com.wzz.mq.ExamSubmitMessage;
 import com.wzz.entity.*;
 import com.wzz.service.impl.*;
 import com.wzz.vo.*;
@@ -18,7 +19,9 @@ import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -58,6 +61,15 @@ public class TeacherController {
 
     @Autowired
     private AnswerServiceImpl answerService;
+
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
+
+    @Value("${mq.exam.exchange:exam.submit.exchange}")
+    private String examSubmitExchange;
+
+    @Value("${mq.exam.routing-key:exam.submit.key}")
+    private String examSubmitRoutingKey;
 
 
 
@@ -1097,57 +1109,21 @@ public class TeacherController {
     public CommonResult<Integer> addExamRecord(@RequestBody ExamRecord examRecord, HttpServletRequest request) {
         log.info("执行了===>TeacherController中的addExamRecord方法");
         String token = request.getHeader("authorization");
-        //当前用户对象的信息
         TokenVo tokenVo = TokenUtils.verifyToken(token);
-        User user = userService.getOne(new QueryWrapper<User>().eq("username", tokenVo.getUsername()));
-        //设置考试信息的字段
-        examRecord.setUserId(user.getId());
-        //设置id
+        // 预生成记录ID（保持与原同步规则一致）
         List<ExamRecord> examRecords = examRecordService.list(new QueryWrapper<>());
         int id = 1;
-        if (examRecords.size() > 0) {
+        if (!examRecords.isEmpty()) {
             id = examRecords.get(examRecords.size() - 1).getRecordId() + 1;
         }
         examRecord.setRecordId(id);
 
-        //设置逻辑题目的分数
-        //查询所有的题目答案信息
-        List<Answer> answers = answerService.list(new QueryWrapper<Answer>().in("question_id", Arrays.asList(examRecord.getQuestionIds().split(","))));
-        //查询考试的题目的分数
-        HashMap<String, String> map = new HashMap<>();//key是题目的id  value是题目分值
-        ExamQuestion examQuestion = examQuestionService.getOne(new QueryWrapper<ExamQuestion>().eq("exam_id", examRecord.getExamId()));
-        //题目的id
-        String[] ids = examQuestion.getQuestionIds().split(",");
-        //题目在考试中对应的分数
-        String[] scores = examQuestion.getScores().split(",");
-        for (int i = 0; i < ids.length; i++) {
-            map.put(ids[i], scores[i]);
-        }
-        //逻辑分数
-        int logicScore = 0;
-        //错题的id
-        StringBuffer sf = new StringBuffer();
-        //用户的答案
-        String[] userAnswers = examRecord.getUserAnswers().split("-");
-        for (int i = 0; i < examRecord.getQuestionIds().split(",").length; i++) {
-            int index = SaltEncryption.getIndex(answers, Integer.parseInt(examRecord.getQuestionIds().split(",")[i]));
-            if (index != -1) {
-                if (Objects.equals(userAnswers[i], answers.get(index).getTrueOption())) {
-                    logicScore += Integer.parseInt(map.get(examRecord.getQuestionIds().split(",")[i]));
-                } else {
-                    sf.append(examRecord.getQuestionIds().split(",")[i]).append(",");
-                }
-            }
-        }
-        examRecord.setLogicScore(logicScore);
-        if (sf.length() > 0) {//存在错的逻辑题
-            examRecord.setErrorQuestionIds(sf.toString().substring(0, sf.toString().length() - 1));
-        }
+        ExamSubmitMessage message = new ExamSubmitMessage();
+        message.setUsername(tokenVo.getUsername());
+        message.setExamRecord(examRecord);
 
-        System.out.println(examRecord);
-        examRecord.setExamTime(new Date());
-        examRecordService.save(examRecord);
-        return new CommonResult<>(200, "考试记录保存成功", id);
+        rabbitTemplate.convertAndSend(examSubmitExchange, examSubmitRoutingKey, message);
+        return new CommonResult<>(200, "考试记录已提交，正在异步保存", id);
     }
 
     /**
