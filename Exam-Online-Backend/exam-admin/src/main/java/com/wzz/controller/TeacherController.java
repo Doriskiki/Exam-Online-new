@@ -90,7 +90,8 @@ public class TeacherController {
         } else {//redis无缓存
             List<QuestionBank> questionBanks = questionBankService.list(new QueryWrapper<>());
             //设置默认缓存时间(10分钟) + 随机缓存时间(0-5分钟 )  来防止缓存雪崩和击穿
-//            redisUtil.set("questionBanks", questionBanks, 60 * 5 + new Random().nextInt(5) * 60);
+            int ttl = 60 * 5 + new Random().nextInt(120);
+            redisUtil.set("questionBanks", questionBanks, ttl);
             return new CommonResult<>(200, "success", questionBanks);
         }
     }
@@ -456,7 +457,8 @@ public class TeacherController {
                     questionVo.setAnswer(qa);
                 }
             }
-//            redisUtil.set("questionVo:" + id, questionVo, 60 * 5 * new Random().nextInt(2));
+            int ttl = 60 * 5 + new Random().nextInt(120);
+            redisUtil.set("questionVo:" + id, questionVo, ttl);
             return new CommonResult<>(200, "查询成功", questionVo);
         }
     }
@@ -742,7 +744,8 @@ public class TeacherController {
                 questionVo.setAnswer(handleAnswer);
                 questionVos.add(questionVo);
             }
-//            redisUtil.set("questionBankQuestion:" + bankId, questionVos, 60 * 5 + new Random().nextInt(2));
+            int ttl = 60 * 5 + new Random().nextInt(120);
+            redisUtil.set("questionBankQuestion:" + bankId, questionVos, ttl);
             return new CommonResult<>(200, "当前题库题目查询成功", questionVos);
         }
     }
@@ -1048,8 +1051,8 @@ public class TeacherController {
             
             addExamByQuestionVo.setQuestionIds(examQuestion.getQuestionIds());
             addExamByQuestionVo.setScores(examQuestion.getScores());
-            
-//            redisUtil.set("examInfo:" + examId, addExamByQuestionVo, 60 * 5 * new Random().nextInt(2));
+            int ttl = 60 * 5 + new Random().nextInt(120);
+            redisUtil.set("examInfo:" + examId, addExamByQuestionVo, ttl);
             return new CommonResult<>(200, "查询成功", addExamByQuestionVo);
         }
     }
@@ -1141,7 +1144,8 @@ public class TeacherController {
             return new CommonResult<>(200, "考试信息查询成功", redisUtil.get("examRecord:" + recordId));
         } else {
             ExamRecord examRecord = examRecordService.getOne(new QueryWrapper<ExamRecord>().eq("record_id", recordId));
-//            redisUtil.set("examRecord:" + recordId, examRecord, 60 * 5 + new Random().nextInt(2) * 60);
+            int ttl = 60 * 5 + new Random().nextInt(120);
+            redisUtil.set("examRecord:" + recordId, examRecord, ttl);
             return new CommonResult<>(200, "考试信息查询成功", examRecord);
         }
     }
@@ -1173,7 +1177,8 @@ public class TeacherController {
                 log.warn("考试ID: {} 没有关联的题目", examId);
                 return new CommonResult<>(404, "该考试还未添加题目");
             }
-            
+            int ttl = 60 * 5 + new Random().nextInt(120);
+            redisUtil.set("examQuestion:" + examId, examQuestion, ttl);
             return new CommonResult<>(200, "查询考试中题目和分值成功", examQuestion);
         }
     }
