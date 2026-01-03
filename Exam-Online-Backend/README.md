@@ -1,7 +1,4 @@
-# 追风考试系统 
-[![star](https://gitee.com/wzhouzhou/exam_system/badge/star.svg?theme=dark)](https://gitee.com/wzhouzhou/exam_system/stargazers)[![fork](https://gitee.com/wzhouzhou/exam_system/badge/fork.svg?theme=white)](https://gitee.com/wzhouzhou/exam_system/members)
-
-[![Fork me on Gitee](https://gitee.com/wzhouzhou/exam_system/widgets/widget_4.svg?color=d716f0)](https://gitee.com/wzhouzhou/exam_system)
+# 追风考试系统
 
 追风考试系统是一个多角色在线培训考试系统，系统集成了用户管理、角色管理、题库管理、试
 
@@ -9,62 +6,23 @@
 
 户在此系统中进行练习并不断提升自己，在考试中不断进步。
 
-`请务必将文档看完, 很多问题都可以在文档中找到解决, 也可以加入群一起交流, 群号: 970804317 下面也会有二维码`
-- # [ :point_right: 线上体验](http://exam.wzzz.fun)
-``` 
-   管理员账号: wzz 
-   密码: 12345
-   提示: 为了各位有良好的体验,请不要更改演示账号的权限以及地址, 如账号异常,请加q群970804317私信群主~!
-```
-- [码云地址](https://gitee.com/wzhouzhou/exam_system)
-- [Github地址]()
-
-## 更新记录
-
-- 2020/11/14 更新:
-
-    1. 网易云音乐线上体验地址: [http://music.wzzz.fun](http://music.wzzz.fun/)
-    2. 博客系统线上体验地址: [http://blog.wzzz.fun](http://blog.wzzz.fun/)   (账号:wzz 密码:111)
-    3. 考试系统线上体验地址: [http://exam.wzzz.fun](http://exam.wzzz.fun/)  (账号:wzz 密码:12345)
-
-- 为了各位有良好的体验,请不要更改演示账号的权限以及密码
-
-------
-
-- `2021/02/07更新:`
-
-    1. 注册验证码校验
-    2. 主页面小屏样式更改
-    3. 题库训练弹窗在小屏样式调整
-    4. 修复添加考试时选择需要密码权限时,密码为空的情况
-    5. 修复更新考试时选择需要密码权限时,密码为空的情况
-    6. >新增**公告功能**(管理员可改,其他用户可以查看公告)
-    7. 修复考试提交试卷业务逻辑BUG
-
-------
-
-- 2021/02/08更新:
-
-    1. >新增测验通过之后的**发放证书**功能 (我的成绩模块中)
-    2.  考试多选题结果数据过滤逻辑优化
-
 ## 技术栈
 
 > 1. SpringBoot
 > 2. Mybatis-plus
 > 3. MySQL 5.7
-> 4. Vue全家桶
+> 4. Vue 全家桶
 > 5. ElementUI
 > 6. Redis
 > 7. Swagger
-> 8. 阿里云OSS
+> 8. 阿里云 OSS
 > 9. Log4j
 
 ## 主要功能
 
 **1.** **权限控制**
 
-本系统存在三个不同的角色，教师，管理员，学生三种用户，此系统是基于vue+springboot实现的前后端分离，用户权限校验通过JWT生成token令牌发放到用户，并根据令牌对用户的身份合法性进行校验。
+本系统存在三个不同的角色，教师，管理员，学生三种用户，此系统是基于 vue+springboot 实现的前后端分离，用户权限校验通过 JWT 生成 token 令牌发放到用户，并根据令牌对用户的身份合法性进行校验。
 
 **2.** **在线考试**
 
@@ -80,7 +38,7 @@
 
 **5.** **题库管理**
 
-超级管理员和教师可以对本考试系统已有的题库进行管理，实现对题库信息的CRUD操作
+超级管理员和教师可以对本考试系统已有的题库进行管理，实现对题库信息的 CRUD 操作
 
 **6.** **试题管理**
 
@@ -157,42 +115,8 @@ npm install # 安装项目所需的依赖(如果速度过慢, 可以尝试cnpm)
 npm run serve #启动项目服务
 ```
 
-此时, 浏览器打开, 输入网址http://localhost:8080，前端项目就完全跑起来了!
+此时, 浏览器打开, 输入网址 http://localhost:8080，前端项目就完全跑起来了!
 
 `2.使用IDEA进入当前项目的exam-exam目录下`
 
-> 使用项目sql目录下的sql文件进行导入，然后使用maven导入依赖，启动项目，后台即可运行起来
-
-## 警告
-
-> 1. 本项目仅用于学习使用, 本人不承担任何恶意使用后果
-> 2. 本项目代码遵循开源协议
-
-## 致谢
-
-本项目UI样式参考以下项目：
-
-1. [云帆考试系统](https://gitee.com/davz/yf-exam-lite)
-
-## 推荐
-
-[SpringBoot个人博客](https://github.com/wzz1206414629/privateBlog)
-
-[高仿网易云音乐](https://gitee.com/wzhouzhou/vue_wzz_cloudMusic)
-
-## 问题
-
-![image-20201108203026741](./preview/image-20201108203026741.png)
-
-- 开发学习问题或者好的建议可以给出反馈交流, 一起学习
-- 如果有需要QQ群里提问，请在提问前先完成以下过程：
-    * 请仔细阅读本项目文档，查看能否解决；
-    * 百度或谷歌相关技术；
-    * 查看相关技术的官方文档
-    * 请提问前尽可能做一些思考分析，然后提问时给出详细的信息以及个人对问题的理解。
-
-希望能与大家成为开发路上的好朋友~! 期待与你相遇~
-
-- License
-
-Copyright (c) 2020-person wangzhouzhou
+> 使用项目 sql 目录下的 sql 文件进行导入，然后使用 maven 导入依赖，启动项目，后台即可运行起来

@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huacai.exam.mapper.ExamMapper">
+
+    <resultMap type="Exam" id="ExamResult">
+        <result property="examId"    column="exam_id"    />
+        <result property="title"    column="title"    />
+        <result property="categoryId"    column="category_id"    />
+        <result property="time"    column="time"    />
+        <result property="totalScore"    column="total_score"    />
+        <result property="passScore"    column="pass_score"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="categoryName"    column="name"    />
+        <result property="eqCount"    column="eqCount"    />
+    </resultMap>
+
+    <sql id="selectExamVo">
+        select exam_id, title, category_id, time, total_score, pass_score, create_time from exam
+    </sql>
+
+    <select id="selectExamList" parameterType="Exam" resultMap="ExamResult">
+        select e.exam_id, e.title, e.category_id, e.time, e.total_score, e.pass_score, e.create_time,
+               c.name, (select count(exam_id) from eq where eq.exam_id = e.exam_id) as eqCount
+        from exam e
+        left join category c on e.category_id = c.category_id
+        <where>
+            <if test="title != null  and title != ''"> and e.title like concat('%', #{title}, '%')</if>
+            <if test="categoryId != null  and categoryId != ''"> and e.category_id = #{categoryId}</if>
+        </where>
+        order by e.create_time desc
+    </select>
+
+    <select id="selectExamByExamId" parameterType="String" resultMap="ExamResult">
+        select e.exam_id, e.title, e.category_id, e.time, e.total_score, e.pass_score, e.create_time,
+               c.name, (select count(exam_id) from eq where eq.exam_id = e.exam_id) as eqCount
+        from exam e
+                 left join category c on e.category_id = c.category_id
+        where exam_id = #{examId}
+    </select>
+
+    <insert id="insertExam" parameterType="Exam">
+        insert into exam
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="examId != null">exam_id,</if>
+            <if test="title != null and title != ''">title,</if>
+            <if test="categoryId != null and categoryId != ''">category_id,</if>
+            <if test="time != null">time,</if>
+            <if test="totalScore != null">total_score,</if>
+            <if test="passScore != null">pass_score,</if>
+            <if test="createTime != null">create_time,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="examId != null">#{examId},</if>
+            <if test="title != null and title != ''">#{title},</if>
+            <if test="categoryId != null and categoryId != ''">#{categoryId},</if>
+            <if test="time != null">#{time},</if>
+            <if test="totalScore != null">#{totalScore},</if>
+            <if test="passScore != null">#{passScore},</if>
+            <if test="createTime != null">#{createTime},</if>
+         </trim>
+    </insert>
+
+    <update id="updateExam" parameterType="Exam">
+        update exam
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="title != null and title != ''">title = #{title},</if>
+            <if test="categoryId != null and categoryId != ''">category_id = #{categoryId},</if>
+            <if test="time != null">time = #{time},</if>
+            <if test="totalScore != null">total_score = #{totalScore},</if>
+            <if test="passScore != null">pass_score = #{passScore},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+        </trim>
+        where exam_id = #{examId}
+    </update>
+
+    <delete id="deleteExamByExamId" parameterType="String">
+        delete from exam where exam_id = #{examId}
+    </delete>
+
+    <delete id="deleteExamByExamIds" parameterType="String">
+        delete from exam where exam_id in
+        <foreach item="examId" collection="array" open="(" separator="," close=")">
+            #{examId}
+        </foreach>
+    </delete>
+</mapper>
