@@ -103,8 +103,19 @@
     </el-dialog>
 
     <!--诚信考试图片-->
-    <el-dialog :visible.sync="creditDialog" @close="creditDialog = false">
-      <img style="width: 100%" :src="item" v-for="item in examRecord.creditImgUrl.split(',')">
+    <el-dialog :visible.sync="creditDialog" @close="creditDialog = false" title="诚信考试截图">
+      <div v-if="examRecord.creditImgUrl && examRecord.creditImgUrl.trim()">
+        <img 
+          style="width: 100%; margin-bottom: 10px;" 
+          :src="item" 
+          :key="index"
+          v-for="(item, index) in examRecord.creditImgUrl.split(',').filter(url => url.trim())"
+          @error="handleImgError"
+        >
+      </div>
+      <div v-else style="text-align: center; padding: 20px; color: #999;">
+        暂无诚信截图
+      </div>
     </el-dialog>
   </el-container>
 </template>
@@ -176,6 +187,12 @@
         await this.$http.get(this.API.getExamRecordById + '/' + this.$route.params.recordId).then((resp) => {
           if (resp.data.code === 200) {
             this.examRecord = resp.data.data
+            console.log('考试记录数据:', resp.data.data)
+            console.log('诚信截图URL:', resp.data.data.creditImgUrl)
+            if (resp.data.data.creditImgUrl) {
+              const urls = resp.data.data.creditImgUrl.split(',').filter(url => url.trim())
+              console.log('解析后的图片URL数组:', urls)
+            }
             // console.log(resp.data.data)
             this.getExamInfoById(resp.data.data.examId)
             this.userAnswer = resp.data.data.userAnswers.split('-')
@@ -255,6 +272,11 @@
             this.$router.push('/markManage')
           }
         })
+      },
+      //图片加载错误处理
+      handleImgError(e) {
+        console.error('图片加载失败:', e.target.src)
+        this.$message.error('图片加载失败: ' + e.target.src)
       }
     }
   }

@@ -3,9 +3,9 @@ package com.wzz.Util;
 /**
  * MinIO 与七牛云的配置片段生成工具（不包含密钥）。
  */
-public final class StorageConfigUtil {
+public final class MinioQiNiuYunConfigUtil {
 
-    private StorageConfigUtil() {
+    private MinioQiNiuYunConfigUtil() {
         // utility class
     }
 

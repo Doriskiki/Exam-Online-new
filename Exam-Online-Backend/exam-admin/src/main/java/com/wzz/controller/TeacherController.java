@@ -1141,9 +1141,12 @@ public class TeacherController {
     public CommonResult<Object> getExamRecordById(@PathVariable Integer recordId) {
         log.info("执行了===>TeacherController中的getExamRecordById方法");
         if (redisUtil.get("examRecord:" + recordId) != null) {
-            return new CommonResult<>(200, "考试信息查询成功", redisUtil.get("examRecord:" + recordId));
+            ExamRecord cachedRecord = (ExamRecord) redisUtil.get("examRecord:" + recordId);
+            log.info("从Redis获取考试记录，recordId: {}, creditImgUrl: {}", recordId, cachedRecord.getCreditImgUrl());
+            return new CommonResult<>(200, "考试信息查询成功", cachedRecord);
         } else {
             ExamRecord examRecord = examRecordService.getOne(new QueryWrapper<ExamRecord>().eq("record_id", recordId));
+            log.info("从数据库获取考试记录，recordId: {}, creditImgUrl: {}", recordId, examRecord != null ? examRecord.getCreditImgUrl() : "null");
             int ttl = 60 * 5 + new Random().nextInt(120);
             redisUtil.set("examRecord:" + recordId, examRecord, ttl);
             return new CommonResult<>(200, "考试信息查询成功", examRecord);

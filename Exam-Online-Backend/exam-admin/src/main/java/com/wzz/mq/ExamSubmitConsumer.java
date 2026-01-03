@@ -35,7 +35,7 @@ public class ExamSubmitConsumer {
         }
         ExamRecord examRecord = message.getExamRecord();
         String username = message.getUsername();
-        log.info("[exam-submit] received submit from user={}, examId={}", username, examRecord.getExamId());
+        log.info("[exam-submit] received submit from user={}, examId={}, creditImgUrl={}", username, examRecord.getExamId(), examRecord.getCreditImgUrl());
 
         User user = userService.getOne(new QueryWrapper<User>().eq("username", username));
         if (user == null) {
@@ -90,6 +90,6 @@ public class ExamSubmitConsumer {
 
         examRecord.setExamTime(new Date());
         examRecordService.save(examRecord);
-        log.info("[exam-submit] saved recordId={} for userId={}", examRecord.getRecordId(), examRecord.getUserId());
+        log.info("[exam-submit] saved recordId={} for userId={}, creditImgUrl={}", examRecord.getRecordId(), examRecord.getUserId(), examRecord.getCreditImgUrl());
     }
 }

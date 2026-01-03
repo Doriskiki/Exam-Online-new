@@ -361,25 +361,36 @@
       },
       //拍照
       takePhoto () {
-        if (this.cameraOn) {//摄像头是否开启 开启了才执行上传信用图片
-          //获得Canvas对象
-          let video = document.getElementById('video')
-          let canvas = document.getElementById('canvas')
-          let ctx = canvas.getContext('2d')
-          ctx.drawImage(video, 0, 0, 200, 200)
-          // toDataURL  ---  可传入'image/png'---默认, 'image/jpeg'
-          let img = document.getElementById('canvas').toDataURL()
+        return new Promise((resolve, reject) => {
+          if (this.cameraOn) {//摄像头是否开启 开启了才执行上传信用图片
+            //获得Canvas对象
+            let video = document.getElementById('video')
+            let canvas = document.getElementById('canvas')
+            let ctx = canvas.getContext('2d')
+            ctx.drawImage(video, 0, 0, 200, 200)
+            // toDataURL  ---  可传入'image/png'---默认, 'image/jpeg'
+            let img = document.getElementById('canvas').toDataURL()
 
-          //构造post的form表单
-          let formData = new FormData()
-          //convertBase64UrlToBlob函数是将base64编码转换为Blob
-          formData.append('file', this.base64ToFile(img, 'examTakePhoto.png'))
-          formData.append('fileType', 'examUserImg')
-          //上传阿里云OSS
-          this.$http.post(this.API.uploadFile, formData).then((resp) => {
-            if (resp.data.code === 200) this.takePhotoUrl.push(resp.data.data)
-          })
-        }
+            //构造post的form表单
+            let formData = new FormData()
+            //convertBase64UrlToBlob函数是将base64编码转换为Blob
+            formData.append('file', this.base64ToFile(img, 'examTakePhoto.png'))
+            formData.append('fileType', 'examUserImg')
+            //上传阿里云OSS
+            this.$http.post(this.API.uploadFile, formData).then((resp) => {
+              if (resp.data.code === 200) {
+                this.takePhotoUrl.push(resp.data.data)
+                resolve()
+              } else {
+                reject(new Error('上传失败'))
+              }
+            }).catch(err => {
+              reject(err)
+            })
+          } else {
+            resolve()
+          }
+        })
       },
       //关闭摄像头
       closeCamera () {

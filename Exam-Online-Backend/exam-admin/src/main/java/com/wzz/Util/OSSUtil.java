@@ -2,8 +2,11 @@ package com.wzz.Util;
 
 import com.aliyun.oss.OSSClient;
 import com.aliyun.oss.model.ObjectMetadata;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.annotation.PostConstruct;
 import java.io.ByteArrayInputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -14,13 +17,38 @@ import java.util.UUID;
  * @created by wzz
  */
 //阿里云上传的工具类
+@Component
 public class OSSUtil {
 
-    public static final String ENDPOINT = "oss-cn-beijing.aliyuncs.com";
-    public static final String ACCESSKEYID = "your-access-key-id";
-    public static final String ACCESSKEYSECRET = "sd2f3g4h5j6k7l8m9n0";
-    public static final String BUCKETNAME = "your-bucket-name";
-    public static final String KEY = "uploads/";
+    @Value("${aliyun.oss.endpoint}")
+    private String endpoint;
+
+    @Value("${aliyun.oss.access-key-id}")
+    private String accessKeyId;
+
+    @Value("${aliyun.oss.access-key-secret}")
+    private String accessKeySecret;
+
+    @Value("${aliyun.oss.bucket-name}")
+    private String bucketName;
+
+    @Value("${aliyun.oss.key-prefix}")
+    private String keyPrefix;
+
+    private static String ENDPOINT;
+    private static String ACCESSKEYID;
+    private static String ACCESSKEYSECRET;
+    private static String BUCKETNAME;
+    private static String KEY;
+
+    @PostConstruct
+    public void init() {
+        ENDPOINT = this.endpoint;
+        ACCESSKEYID = this.accessKeyId;
+        ACCESSKEYSECRET = this.accessKeySecret;
+        BUCKETNAME = this.bucketName;
+        KEY = this.keyPrefix;
+    }
 
     public static String picOSS(MultipartFile uploadFile) throws Exception {
         // 创建OSSClient实例
@@ -43,7 +71,7 @@ public class OSSUtil {
         ossClient.shutdown();
 //        Date expiration = new Date(new Date().getTime() + 3600L * 1000 * 24 * 365 * 10);
 //        return ossClient.generatePresignedUrl(BUCKETNAME, KEY + date + "/" + uploadFile.getOriginalFilename(), expiration).toString();
-        return "https://" + BUCKETNAME + ".oss-cn-beijing.aliyuncs.com" + "/" + KEY + date + "/" + fileName;
+        return "https://" + BUCKETNAME + "." + ENDPOINT + "/" + KEY + date + "/" + fileName;
     }
 
     //根据文件的类型 设置请求头
