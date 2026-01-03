@@ -16,11 +16,11 @@ import java.util.UUID;
 //阿里云上传的工具类
 public class OSSUtil {
 
-    public static String ENDPOINT = "你的阿里云配置";
-    public static String ACCESSKEYID = "你的阿里云配置";
-    public static String ACCESSKEYSECRET = "你的阿里云配置";
-    public static String BUCKETNAME = "你的阿里云配置";
-    public static String KEY = "路径";
+    public static final String ENDPOINT = "oss-cn-beijing.aliyuncs.com";
+    public static final String ACCESSKEYID = "your-access-key-id";
+    public static final String ACCESSKEYSECRET = "sd2f3g4h5j6k7l8m9n0";
+    public static final String BUCKETNAME = "your-bucket-name";
+    public static final String KEY = "uploads/";
 
     public static String picOSS(MultipartFile uploadFile) throws Exception {
         // 创建OSSClient实例

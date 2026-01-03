@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huacai.exam.mapper.GuideMapper">
+    
+    <resultMap type="Guide" id="GuideResult">
+        <result property="guideId"    column="guide_id"    />
+        <result property="type"    column="type"    />
+        <result property="title"    column="title"    />
+        <result property="content"    column="content"    />
+        <result property="summary"    column="summary"    />
+        <result property="tips"    column="tips"    />
+        <result property="createTime"    column="create_time"    />
+    </resultMap>
+
+    <sql id="selectGuideVo">
+        select guide_id, type, title, content, summary, tips, create_time from guide
+    </sql>
+
+    <select id="selectGuideList" parameterType="Guide" resultMap="GuideResult">
+        <include refid="selectGuideVo"/>
+        <where>  
+            <if test="type != null  and type != ''"> and type = #{type}</if>
+            <if test="title != null  and title != ''"> and title like concat('%', #{title}, '%')</if>
+        </where>
+    </select>
+    
+    <select id="selectGuideByGuideId" parameterType="String" resultMap="GuideResult">
+        <include refid="selectGuideVo"/>
+        where guide_id = #{guideId}
+    </select>
+
+    <insert id="insertGuide" parameterType="Guide">
+        insert into guide
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="guideId != null">guide_id,</if>
+            <if test="type != null and type != ''">type,</if>
+            <if test="title != null and title != ''">title,</if>
+            <if test="content != null and content != ''">content,</if>
+            <if test="summary != null and summary != ''">summary,</if>
+            <if test="tips != null and tips != ''">tips,</if>
+            <if test="createTime != null">create_time,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="guideId != null">#{guideId},</if>
+            <if test="type != null and type != ''">#{type},</if>
+            <if test="title != null and title != ''">#{title},</if>
+            <if test="content != null and content != ''">#{content},</if>
+            <if test="summary != null and summary != ''">#{summary},</if>
+            <if test="tips != null and tips != ''">#{tips},</if>
+            <if test="createTime != null">#{createTime},</if>
+         </trim>
+    </insert>
+
+    <update id="updateGuide" parameterType="Guide">
+        update guide
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="type != null and type != ''">type = #{type},</if>
+            <if test="title != null and title != ''">title = #{title},</if>
+            <if test="content != null and content != ''">content = #{content},</if>
+            <if test="summary != null and summary != ''">summary = #{summary},</if>
+            <if test="tips != null and tips != ''">tips = #{tips},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+        </trim>
+        where guide_id = #{guideId}
+    </update>
+
+    <delete id="deleteGuideByGuideId" parameterType="String">
+        delete from guide where guide_id = #{guideId}
+    </delete>
+
+    <delete id="deleteGuideByGuideIds" parameterType="String">
+        delete from guide where guide_id in 
+        <foreach item="guideId" collection="array" open="(" separator="," close=")">
+            #{guideId}
+        </foreach>
+    </delete>
+</mapper>

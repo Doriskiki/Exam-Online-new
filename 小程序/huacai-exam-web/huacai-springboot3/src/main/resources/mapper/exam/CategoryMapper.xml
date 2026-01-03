@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huacai.exam.mapper.CategoryMapper">
+
+    <resultMap type="Category" id="CategoryResult">
+        <result property="categoryId"    column="category_id"    />
+        <result property="name"    column="name"    />
+        <result property="sortOrder"    column="sort_order"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="categoryName"    column="categoryName"    />
+        <result property="questionCount"    column="questionCount"    />
+    </resultMap>
+
+    <sql id="selectCategoryVo">
+        select category_id, name, sort_order, create_time from category
+    </sql>
+
+    <select id="selectCategoryList" parameterType="Category" resultMap="CategoryResult">
+        <include refid="selectCategoryVo"/>
+        <where>
+            <if test="name != null  and name != ''"> and name like concat('%', #{name}, '%')</if>
+        </where>
+        order by sort_order
+    </select>
+
+    <select id="selectCategoryByCategoryId" parameterType="String" resultMap="CategoryResult">
+        <include refid="selectCategoryVo"/>
+        where category_id = #{categoryId}
+    </select>
+
+    <!--获取题目类型分布数据-->
+    <select id="getQuestionTypeStats" resultMap="CategoryResult">
+        select c.category_id, c.name as categoryName,
+               count(q.question_id) as questionCount
+        from category c
+        left join questions q on c.category_id = q.category_id
+        group by c.category_id,c.name
+    </select>
+
+    <insert id="insertCategory" parameterType="Category">
+        insert into category
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="categoryId != null">category_id,</if>
+            <if test="name != null and name != ''">name,</if>
+            <if test="sortOrder != null">sort_order,</if>
+            <if test="createTime != null">create_time,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="categoryId != null">#{categoryId},</if>
+            <if test="name != null and name != ''">#{name},</if>
+            <if test="sortOrder != null">#{sortOrder},</if>
+            <if test="createTime != null">#{createTime},</if>
+         </trim>
+    </insert>
+
+    <update id="updateCategory" parameterType="Category">
+        update category
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="name != null and name != ''">name = #{name},</if>
+            <if test="sortOrder != null">sort_order = #{sortOrder},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+        </trim>
+        where category_id = #{categoryId}
+    </update>
+
+    <delete id="deleteCategoryByCategoryId" parameterType="String">
+        delete from category where category_id = #{categoryId}
+    </delete>
+
+    <delete id="deleteCategoryByCategoryIds" parameterType="String">
+        delete from category where category_id in
+        <foreach item="categoryId" collection="array" open="(" separator="," close=")">
+            #{categoryId}
+        </foreach>
+    </delete>
+</mapper>

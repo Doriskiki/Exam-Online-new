@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huacai.exam.mapper.EqMapper">
+
+    <resultMap type="Eq" id="EqResult">
+        <result property="eqId"    column="eq_id"    />
+        <result property="examId"    column="exam_id"    />
+        <result property="questionId"    column="question_id"    />
+        <result property="score"    column="score"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="examTitle"    column="examTitle"    />
+        <result property="type"    column="type"    />
+        <result property="title"    column="title"    />
+        <result property="options"    column="options"    />
+        <result property="answer"    column="answer"    />
+    </resultMap>
+
+    <sql id="selectEqVo">
+        select eq_id, exam_id, question_id, score, create_time from eq
+    </sql>
+
+    <select id="selectEqList" parameterType="Eq" resultMap="EqResult">
+        select eq.eq_id, eq.exam_id, eq.question_id, eq.score, eq.create_time,
+               e.title as examTitle,
+               q.type, q.title, q.options, q.answer
+        from eq
+        left join exam e on eq.exam_id = e.exam_id
+        left join questions q on eq.question_id = q.question_id
+        <where>
+            <if test="examId != null  and examId != ''"> and eq.exam_id = #{examId}</if>
+            <if test="questionId != null  and questionId != ''"> and eq.question_id = #{questionId}</if>
+            <if test="examTitle != null  and examTitle != ''"> and e.title like concat('%', #{examTitle}, '%')</if>
+        </where>
+        order by case q.type
+            when '单选题' then 1
+            when '判断题' then 2
+            when '多选题' then 3
+            else 4
+        end
+    </select>
+
+    <select id="selectEqByEqId" parameterType="String" resultMap="EqResult">
+        <include refid="selectEqVo"/>
+        where eq_id = #{eqId}
+    </select>
+
+    <!--根据考试ID查询该考试的题目总数-->
+    <select id="selectQuestionCountByExamId" resultType="java.lang.Long">
+        select count(eq_id)
+        from eq
+        where exam_id = #{examId}
+    </select>
+
+    <!--根据考试ID查询对应的试题列表-->
+    <select id="selectExamQuestionsListByExamId" parameterType="String" resultMap="EqResult">
+        select eq.eq_id, eq.exam_id, eq.question_id,
+               q.type, q.title, q.options, q.answer, q.category_id
+        from eq
+        left join questions q on eq.question_id = q.question_id
+        where exam_id = #{examId}
+    </select>
+
+    <insert id="insertEq" parameterType="Eq">
+        insert into eq
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="eqId != null">eq_id,</if>
+            <if test="examId != null and examId != ''">exam_id,</if>
+            <if test="questionId != null and questionId != ''">question_id,</if>
+            <if test="score != null">score,</if>
+            <if test="createTime != null">create_time,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="eqId != null">#{eqId},</if>
+            <if test="examId != null and examId != ''">#{examId},</if>
+            <if test="questionId != null and questionId != ''">#{questionId},</if>
+            <if test="score != null">#{score},</if>
+            <if test="createTime != null">#{createTime},</if>
+         </trim>
+    </insert>
+
+    <update id="updateEq" parameterType="Eq">
+        update eq
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="examId != null and examId != ''">exam_id = #{examId},</if>
+            <if test="questionId != null and questionId != ''">question_id = #{questionId},</if>
+            <if test="score != null">score = #{score},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+        </trim>
+        where eq_id = #{eqId}
+    </update>
+
+    <delete id="deleteEqByEqId" parameterType="String">
+        delete from eq where eq_id = #{eqId}
+    </delete>
+
+    <delete id="deleteEqByEqIds" parameterType="String">
+        delete from eq where eq_id in
+        <foreach item="eqId" collection="array" open="(" separator="," close=")">
+            #{eqId}
+        </foreach>
+    </delete>
+
+    <!--根据考试ID删除试题-->
+    <delete id="deleteEqByExamId" parameterType="String">
+        delete
+        from eq
+        where exam_id = #{examId}
+    </delete>
+</mapper>
