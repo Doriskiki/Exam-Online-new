@@ -1,0 +1,16 @@
+{
+  "table": [
+    {"class":"高一(1)班","mastery":"89%","avgScore":"82分","progress":"+12%","excellent":"35%","pass":"92%","improvement":"显著"},
+    {"class":"高一(2)班","mastery":"85%","avgScore":"79分","progress":"+8%","excellent":"28%","pass":"88%","improvement":"良好"},
+    {"class":"高一(3)班","mastery":"78%","avgScore":"75分","progress":"+5%","excellent":"22%","pass":"85%","improvement":"一般"},
+    {"class":"高一(4)班","mastery":"92%","avgScore":"85分","progress":"+15%","excellent":"40%","pass":"95%","improvement":"显著"}
+  ],
+  "tags": {
+    "avgMastery": 82,
+    "weakPoints": 3,
+    "practiceRate": 78,
+    "improveRate": 12,
+    "studyHours": 4.2,
+    "correctionRate": 65
+  }
+}

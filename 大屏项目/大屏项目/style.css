@@ -1,0 +1,615 @@
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+body {
+  background: #000;
+  color: #e6f0ff;
+  font-family: "YouSheBiaoTiHei", "Microsoft YaHei", "PingFang SC", "Arial",
+    sans-serif;
+  overflow: hidden;
+}
+#app {
+  position: relative;
+}
+.stage {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1920px;
+  height: 1080px;
+  transform-origin: 0 0;
+  --overlay-gap: 60px;
+  --overlay-scale: 1;
+  --base-scale: 1;
+  background-image: url("富浦电缆智慧工厂大屏切片/dbdb.png"),
+    url("富浦电缆智慧工厂大屏切片/bg.avif");
+  background-size: calc(100% * var(--overlay-scale))
+      calc((100% - var(--overlay-gap)) * var(--overlay-scale)),
+    calc(100% * var(--base-scale)) calc(100% * var(--base-scale));
+  background-repeat: no-repeat, no-repeat;
+  background-position: center bottom, center center;
+}
+.header {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 16px;
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+.header-title {
+  max-width: 90%;
+  height: auto;
+  filter: drop-shadow(0 4px 10px rgba(111, 194, 255, 0.45));
+  transform-origin: center top;
+  transform: scale(var(--header-scale, 1));
+  text-align: center;
+  white-space: nowrap;
+}
+.header-title.gradient-title {
+  font-weight: 600;
+  letter-spacing: 2px;
+}
+.content-cols {
+  position: absolute;
+  left: 47px;
+  right: 20px;
+  top: 123px;
+  bottom: 20px;
+  display: grid;
+  grid-template-columns: 600px 660px 540px;
+  gap: 20px;
+}
+.panel {
+  position: relative;
+  background: rgba(12, 32, 64, 0.35);
+  border: none;
+  border-radius: 10px;
+  box-shadow: none;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.panel__title {
+  height: 60px;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.panel__title .title-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.panel__title .title-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.title-icon {
+  width: 28px;
+  height: 32px;
+  flex: 0 0 28px;
+  background-image: url("富浦电缆智慧工厂大屏切片/组 4.png");
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  background-color: transparent;
+  filter: drop-shadow(0 2px 6px rgba(255, 255, 255, 0.25));
+}
+.panel__title img {
+  max-height: 75px;
+  width: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.35));
+}
+/* clickable title */
+#gen-data-title {
+  cursor: pointer;
+}
+.gradient-title {
+  font-weight: 400;
+  font-size: 24px;
+  line-height: 55px;
+  color: rgba(0, 0, 0, 0);
+  text-shadow: 0 3px 0 rgba(0, 0, 0, 0.31);
+  background: linear-gradient(
+    0deg,
+    #6fc2ff 0%,
+    #ccdae6 35.546875%,
+    #ffffff 60.6201171875%
+  );
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+.control-group__title.gradient-title {
+  background: linear-gradient(90deg, #00efed 0%, #1d5df4 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+.panel__body {
+  flex: 1;
+  padding: 8px 12px 12px 12px;
+}
+.chart {
+  width: 100%;
+  height: 100%;
+}
+
+/* columns */
+.col {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.col-left > .panel,
+.col-middle > .panel,
+.col-right > .panel {
+  flex: 1;
+}
+
+/* table */
+.panel-table .panel__body {
+  padding: 12px;
+}
+.data-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 8px;
+}
+.data-table thead th {
+  font-size: 14px;
+  color: #cfe8ff;
+  font-weight: 600;
+  text-align: center;
+  padding: 10px 8px;
+  background: rgba(111, 194, 255, 0.08);
+  border-top-left-radius: 6px;
+  border-top-right-radius: 6px;
+}
+.data-table tbody td {
+  font-size: 13px;
+  color: #e6f0ff;
+  text-align: center;
+  padding: 10px 8px;
+  background: rgba(12, 32, 64, 0.45);
+  border: 1px solid rgba(111, 194, 255, 0.16);
+  border-left: none;
+  border-right: none;
+}
+.data-table tbody tr td:first-child {
+  border-left: 1px solid rgba(111, 194, 255, 0.22);
+  border-top-left-radius: 6px;
+  border-bottom-left-radius: 6px;
+  text-align: left;
+  padding-left: 12px;
+}
+.data-table tbody tr td:last-child {
+  border-right: 1px solid rgba(111, 194, 255, 0.22);
+  border-top-right-radius: 6px;
+  border-bottom-right-radius: 6px;
+}
+
+/* info tags */
+.info-tags {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+.tag {
+  display: flex;
+  align-items: center;
+  height: 44px;
+  padding: 0 10px;
+  border: 1px solid rgba(111, 194, 255, 0.35);
+  border-radius: 8px;
+  background: linear-gradient(
+    180deg,
+    rgba(20, 40, 72, 0.6),
+    rgba(10, 24, 48, 0.5)
+  );
+  box-shadow: inset 0 0 10px rgba(111, 194, 255, 0.12),
+    0 0 10px rgba(111, 194, 255, 0.12);
+}
+.tag-icon {
+  width: 18px;
+  height: 18px;
+  margin-right: 6px;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.25));
+}
+.tag .label {
+  color: #9fc8ff;
+  font-size: 12px;
+  margin-right: 6px;
+}
+.tag .sep {
+  width: 1px;
+  height: 15px;
+  background: #2a7fff;
+  border-radius: 1px;
+  margin-right: 6px;
+  opacity: 0.85;
+}
+.tag .value {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+.tag .value b {
+  font-size: 16px;
+  line-height: 1;
+  color: #e6f0ff;
+}
+.tag .value em {
+  font-style: normal;
+  color: #9fc8ff;
+  font-size: 12px;
+}
+/* row colors for values */
+.tags-gen .tag:nth-child(-n + 3) .value b {
+  color: #2a7fff;
+}
+.tags-gen .tag:nth-child(n + 4):nth-child(-n + 6) .value b {
+  color: #ff9d2a;
+}
+.tags-gen .tag:nth-child(n + 7):nth-child(-n + 9) .value b {
+  color: #2affa2;
+}
+.tags-load .tag:nth-child(-n + 3) .value b {
+  color: #2a7fff;
+}
+.tags-load .tag:nth-child(n + 4):nth-child(-n + 6) .value b {
+  color: #ff9d2a;
+}
+
+/* controls */
+.controls {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.control-group {
+  padding-bottom: 6px;
+}
+.control-group__title.small {
+  font-size: 20px;
+  line-height: 40px;
+}
+.grid {
+  display: grid;
+  gap: 12px;
+}
+.grid-3x4 {
+  grid-template-columns: repeat(3, 1fr);
+}
+.row {
+  display: flex;
+  gap: 14px;
+  flex-wrap: nowrap;
+}
+.row-ctrl {
+  align-items: center;
+}
+
+.row-ctrl {
+  gap: 12px;
+}
+.row-ctrl .btn-a {
+  width: 66px;
+  height: 66px;
+  min-width: 66px;
+  padding: 0;
+  border-radius: 12px;
+}
+.k-pill {
+  flex: 1;
+}
+
+.heater-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.heater-row {
+  display: grid;
+  grid-template-columns: 70px 1fr 1fr;
+  gap: 12px;
+  align-items: center;
+}
+.zone-label {
+  color: #cfe8ff;
+  font-size: 14px;
+  line-height: 52px;
+  padding-left: 14px;
+}
+.wdk {
+  display: grid;
+  grid-template-columns: 48px 1fr;
+  align-items: center;
+  height: 52px;
+  background-image: url("富浦电缆智慧工厂大屏切片/wdk.png");
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  padding: 0 16px 0 0;
+  position: relative;
+}
+.wdk .vlabel {
+  text-orientation: upright;
+  color: #cfe8ff;
+  font-size: 12px;
+  letter-spacing: 0.2px;
+  line-height: 1;
+  padding-left: 6px;
+  text-align: center;
+}
+.wdk .num {
+  justify-self: center;
+  align-self: center;
+  font-weight: 700;
+  font-size: 18px;
+  color: #fff;
+  text-align: center;
+}
+.wdk {
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+.wdk:hover {
+  filter: brightness(1.2);
+  transform: scale(1.02);
+}
+.wdk.selected {
+  background-image: url("富浦电缆智慧工厂大屏切片/xz.png");
+  box-shadow: 0 0 10px rgba(255, 184, 92, 0.5);
+}
+.wdk.selected .vlabel {
+  color: #fff;
+}
+.wdk.selected .num {
+  color: #FFB85C;
+}
+.btn,
+.pill {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  min-width: 72px;
+  padding: 0 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(111, 194, 255, 0.35);
+  color: #e6f0ff;
+  box-shadow: 0 0 10px rgba(111, 194, 255, 0.2),
+    inset 0 0 10px rgba(111, 194, 255, 0.12);
+  background: transparent;
+}
+/* small control buttons - short bg */
+.btn-a {
+  background-image: url("富浦电缆智慧工厂大屏切片/wx.png");
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+}
+.btn-a.on {
+  background-image: url("富浦电缆智慧工厂大屏切片/xz.png");
+  color: #fff;
+  text-shadow: 0 0 8px rgba(255, 255, 255, 0.85),
+    0 0 12px rgba(255, 184, 92, 0.6);
+}
+/* two-state wide buttons */
+.btn-b {
+  flex: 1;
+  background-image: url("富浦电缆智慧工厂大屏切片/wx2.png");
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+}
+.btn-b.on {
+  background-image: url("富浦电缆智慧工厂大屏切片/xz2.png");
+  color: #fff;
+  text-shadow: 0 0 8px rgba(255, 255, 255, 0.85),
+    0 0 12px rgba(255, 184, 92, 0.6);
+}
+.row .btn-b {
+  height: 66px;
+}
+.view-buttons-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+.view-buttons-grid .btn-b {
+  height: 66px;
+}
+/* special temperature pill */
+.k-pill {
+  display: grid;
+  grid-template-columns: 74px 1fr;
+  align-items: center;
+  height: 66px;
+  padding: 0 16px 0 0;
+  background-image: url("富浦电缆智慧工厂大屏切片/k.png");
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  border: none;
+  min-width: 180px;
+}
+.k-pill .vlabels {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 100%;
+  padding-left: 12px;
+  padding-right: 24px;
+}
+.k-pill .vlabels span {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  color: #cfe8ff;
+  font-size: 12px;
+  letter-spacing: 2px;
+}
+.k-pill .num {
+  justify-self: center;
+  font-weight: 700;
+  font-size: 20px;
+  color: #fff;
+}
+.pill {
+  color: #cfe8ff;
+}
+
+/* chart legend spacing */
+.col-middle .panel__body {
+  padding-bottom: 4px;
+}
+
+/* normalize all echarts canvas margins */
+.chart canvas {
+  margin: -29px !important;
+}
+
+/* chips on title right */
+.chip {
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 10px;
+  color: #cfe8ff;
+  font-size: 12px;
+  border-radius: 6px;
+  background-image: url("富浦电缆智慧工厂大屏切片/组 6812.png");
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+.chip:hover {
+  filter: brightness(1.2);
+  transform: scale(1.05);
+}
+.chip .chev {
+  width: 7px;
+  height: 6px;
+  background: linear-gradient(0deg, #00efed 0%, #1d5df4 100%);
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+}
+.panel__title .title-right .chip {
+  margin-left: 6px;
+}
+
+/* time label */
+.nowtime {
+  position: absolute;
+  left: 54px;
+  top: 70px;
+  color: #9fc8ff;
+  font-size: 21px;
+  letter-spacing: 1px;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.3);
+}
+
+/* 右上角数据更新时间信息 */
+.env-info {
+  position: absolute;
+  right: 60px;
+  top: 70px;
+  color: #9fc8ff;
+  font-size: 18px;
+  letter-spacing: 1px;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.3);
+}
+
+/* modal */
+.modal-mask {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(2, 14, 30, 0.55);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 99;
+}
+.modal-mask.show {
+  display: flex;
+}
+.modal {
+  position: relative;
+  width: 1260px;
+  min-height: 640px;
+  padding: 40px 60px 50px 60px;
+  background-image: url("大屏弹窗 slices/tck.png");
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  color: #e6f0ff;
+}
+.modal-title {
+  text-align: center;
+  font-size: 28px;
+  line-height: 1;
+  letter-spacing: 2px;
+  margin: 4px 0 22px 0;
+  color: #dff1ff;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.3);
+}
+.modal-close {
+  position: absolute;
+  right: 67px;
+  top: 70px;
+  width: 28px;
+  height: 28px;
+  background-image: url("大屏弹窗 slices/gb.png");
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  cursor: pointer;
+}
+.modal-body {
+  width: 100%;
+  margin-top: 66px;
+}
+.modal-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  column-gap: 80px;
+  row-gap: 20px;
+}
+.modal-col {
+  display: grid;
+  grid-template-columns: auto 220px;
+  align-items: center;
+  gap: 12px;
+}
+.modal-label {
+  color: #cfe8ff;
+  font-size: 16px;
+}
+.modal-value {
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: #cfe8ff;
+  background-image: url("大屏弹窗 slices/矩形 560 拷贝.png");
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+}

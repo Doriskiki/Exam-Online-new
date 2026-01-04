@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"
+    />
+    <title>智慧教育决策引擎 - 教考分离数据大屏</title>
+    <link rel="stylesheet" href="./style.css?v=20251111-1" />
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+  </head>
+  <body>
+    <div id="app">
+      <div class="stage" id="stage">
+        <div class="header">
+          <div class="header-title gradient-title" style="font-size: 48px; line-height: 1.2;">
+            智慧教育决策引擎 - 教考分离数据大屏
+          </div>
+        </div>
+        <div class="env-info">数据更新时间：2025-12-04 08:00</div>
+        <div class="nowtime" id="nowtime"></div>
+        <div class="content-cols">
+          <div class="col col-left">
+            <section class="panel panel-table">
+              <div class="panel__title">
+                <div class="title-left">
+                  <span class="title-icon"></span>
+                  <div class="gradient-title">教学效果量化反馈</div>
+                </div>
+              </div>
+              <div class="panel__body">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>班级</th>
+                      <th>知识点掌握率</th>
+                      <th>班级平均分</th>
+                      <th>进步率</th>
+                      <th>优秀率</th>
+                      <th>及格率</th>
+                      <th>教学改进度</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>高一(1)班</td>
+                      <td>89%</td>
+                      <td>82分</td>
+                      <td>+12%</td>
+                      <td>35%</td>
+                      <td>92%</td>
+                      <td>显著</td>
+                    </tr>
+                    <tr>
+                      <td>高一(2)班</td>
+                      <td>85%</td>
+                      <td>79分</td>
+                      <td>+8%</td>
+                      <td>28%</td>
+                      <td>88%</td>
+                      <td>良好</td>
+                    </tr>
+                    <tr>
+                      <td>高一(3)班</td>
+                      <td>78%</td>
+                      <td>75分</td>
+                      <td>+5%</td>
+                      <td>22%</td>
+                      <td>85%</td>
+                      <td>一般</td>
+                    </tr>
+                    <tr>
+                      <td>高一(4)班</td>
+                      <td>92%</td>
+                      <td>85分</td>
+                      <td>+15%</td>
+                      <td>40%</td>
+                      <td>95%</td>
+                      <td>显著</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+            <section class="panel panel-tags">
+              <div class="panel__title">
+                <div class="title-left">
+                  <span class="title-icon"></span>
+                  <div class="gradient-title" id="gen-data-title" style="cursor: pointer;">多维学生画像构建</div>
+                </div>
+              </div>
+              <div class="panel__body">
+                <div class="info-tags tags-gen">
+                  <!-- row 1 -->
+                  <div class="tag"><img class="tag-icon" src="富浦电缆智慧工厂大屏切片/dy.png" alt="dy"/><span class="label">平均知识点掌握度</span><span class="sep"></span><span class="value"><b>82</b><em>%</em></span></div>
+                  <div class="tag"><img class="tag-icon" src="富浦电缆智慧工厂大屏切片/dl.png" alt="dl"/><span class="label">薄弱环节数量</span><span class="sep"></span><span class="value"><b>3</b><em>个</em></span></div>
+                  <div class="tag"><img class="tag-icon" src="富浦电缆智慧工厂大屏切片/gl.png" alt="gl"/><span class="label">个性化练习完成率</span><span class="sep"></span><span class="value"><b>78</b><em>%</em></span></div>
+                  <!-- row 2 -->
+                  <div class="tag"><img class="tag-icon" src="富浦电缆智慧工厂大屏切片/dn.png" alt="dn"/><span class="label">成绩提升幅度</span><span class="sep"></span><span class="value"><b>12</b><em>%</em></span></div>
+                  <div class="tag"><img class="tag-icon" src="富浦电缆智慧工厂大屏切片/wc.png" alt="wc"/><span class="label">学习时长</span><span class="sep"></span><span class="value"><b>4.2</b><em>h/天</em></span></div>
+                  <div class="tag"><img class="tag-icon" src="富浦电缆智慧工厂大屏切片/dj.png" alt="dj"/><span class="label">错题订正率</span><span class="sep"></span><span class="value"><b>65</b><em>%</em></span></div>
+                  <!-- row 3 -->
+                  <div class="tag"><img class="tag-icon" src="富浦电缆智慧工厂大屏切片/yx.png" alt="yx"/><span class="label">学习状态</span><span class="sep"></span><span class="value"><b>良好</b></span></div>
+                  <div class="tag empty"></div>
+                  <div class="tag empty"></div>
+                </div>
+              </div>
+            </section>
+            <section class="panel panel-tags">
+              <div class="panel__title">
+                <div class="title-left">
+                  <span class="title-icon"></span>
+                  <div class="gradient-title">试卷质量自动评估</div>
+                </div>
+              </div>
+              <div class="panel__body">
+                <div class="info-tags tags-load">
+                  <!-- row 1 -->
+                  <div class="tag"><img class="tag-icon" src="富浦电缆智慧工厂大屏切片/dy.png" alt="dy"/><span class="label">难度系数</span><span class="sep"></span><span class="value"><b>0.65</b></span></div>
+                  <div class="tag"><img class="tag-icon" src="富浦电缆智慧工厂大屏切片/dl.png" alt="dl"/><span class="label">区分度指数</span><span class="sep"></span><span class="value"><b>0.42</b></span></div>
+                  <div class="tag"><img class="tag-icon" src="富浦电缆智慧工厂大屏切片/gl.png" alt="gl"/><span class="label">有效题占比</span><span class="sep"></span><span class="value"><b>88</b><em>%</em></span></div>
+                  <!-- row 2 -->
+                  <div class="tag"><img class="tag-icon" src="富浦电缆智慧工厂大屏切片/dn.png" alt="dn"/><span class="label">知识点覆盖率</span><span class="sep"></span><span class="value"><b>92</b><em>%</em></span></div>
+                  <div class="tag"><img class="tag-icon" src="富浦电缆智慧工厂大屏切片/sb.png" alt="sb"/><span class="label">无效难题数</span><span class="sep"></span><span class="value"><b>3</b><em>题</em></span></div>
+                  <div class="tag"><img class="tag-icon" src="富浦电缆智慧工厂大屏切片/gyb.png" alt="gyb"/><span class="label">送分题数量</span><span class="sep"></span><span class="value"><b>2</b><em>题</em></span></div>
+                </div>
+              </div>
+            </section>
+          </div>
+
+          <div class="col col-middle">
+            <section class="panel">
+              <div class="panel__title">
+                <div class="title-left">
+                  <span class="title-icon"></span>
+                  <div class="gradient-title">知识点掌握率趋势对比</div>
+                </div>
+                <div class="title-right">
+                  <span class="chip">按学科 <span class="chev"></span></span>
+                  <span class="chip">2025-10至2025-12 <span class="chev"></span></span>
+                </div>
+              </div>
+              <div class="panel__body">
+                <div id="chart-heater-line" class="chart"></div>
+              </div>
+            </section>
+            <section class="panel">
+              <div class="panel__title">
+                <div class="title-left">
+                  <span class="title-icon"></span>
+                  <div class="gradient-title">班级知识点掌握率曲线对比</div>
+                </div>
+                <div class="title-right">
+                  <span class="chip">按班级 <span class="chev"></span></span>
+                  <span class="chip">2025-10至2025-12 <span class="chev"></span></span>
+                </div>
+              </div>
+              <div class="panel__body">
+                <div id="chart-generator-line" class="chart"></div>
+              </div>
+            </section>
+            <section class="panel">
+              <div class="panel__title">
+                <div class="title-left">
+                  <span class="title-icon"></span>
+                  <div class="gradient-title">试卷质量评估分析</div>
+                </div>
+                <div class="title-right">
+                  <span class="chip">难度与区分度 <span class="chev"></span></span>
+                  <span class="chip">2025-10至2025-12 <span class="chev"></span></span>
+                </div>
+              </div>
+              <div class="panel__body">
+                <div id="chart-load-line" class="chart"></div>
+              </div>
+            </section>
+          </div>
+
+          <div class="col col-right">
+            <section class="panel panel-controls">
+              <div class="panel__title">
+                <div class="title-left">
+                  <span class="title-icon"></span>
+                  <div class="gradient-title">数据分析控制面板</div>
+                </div>
+              </div>
+              <div class="panel__body controls">
+                <div class="control-group">
+                  <div class="control-group__title gradient-title small">
+                    数据筛选条件
+                  </div>
+                  <div class="heater-rows">
+                    <div class="heater-row">
+                      <div class="zone-label">对比维度</div>
+                      <div class="wdk selected"><div class="vlabel">按班级</div><div class="num">▼</div></div>
+                      <div class="wdk"><div class="vlabel">按学科</div><div class="num">▼</div></div>
+                    </div>
+                    <div class="heater-row">
+                      <div class="zone-label">时间范围</div>
+                      <div class="wdk"><div class="vlabel">近1个月</div><div class="num">▼</div></div>
+                      <div class="wdk selected"><div class="vlabel">近3个月</div><div class="num">▼</div></div>
+                    </div>
+                    <div class="heater-row">
+                      <div class="zone-label">学科筛选</div>
+                      <div class="wdk selected"><div class="vlabel">全部学科</div><div class="num">▼</div></div>
+                      <div class="wdk"><div class="vlabel">重点学科</div><div class="num">▼</div></div>
+                    </div>
+                    <div class="heater-row">
+                      <div class="zone-label">考试类型</div>
+                      <div class="wdk selected"><div class="vlabel">全部考试</div><div class="num">▼</div></div>
+                      <div class="wdk"><div class="vlabel">重点考试</div><div class="num">▼</div></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="control-group">
+                  <div class="control-group__title gradient-title small">
+                    数据更新设置
+                  </div>
+                  <div class="row row-ctrl">
+                    <div class="btn btn-a on">手动更新</div>
+                    <div class="btn btn-a">自动更新</div>
+                    <div class="btn btn-a">导出数据</div>
+                    <div class="btn btn-a">刷新图表</div>
+                    <div class="k-pill"><div class="vlabels"><span>更新频率</span><span>周期设置</span></div><div class="num">每小时</div></div>
+                  </div>
+                </div>
+                <div class="control-group">
+                  <div class="control-group__title gradient-title small">
+                    功能视图切换
+                  </div>
+                  <div class="view-buttons-grid">
+                    <div class="btn btn-b on" data-view="teaching">教学效果反馈</div>
+                    <div class="btn btn-b" data-view="student">学生画像分析</div>
+                    <div class="btn btn-b" data-view="paper">试卷质量评估</div>
+                    <div class="btn btn-b" data-view="comprehensive">综合分析报告</div>
+                    <div class="btn btn-b" data-view="compare">数据对比分析</div>
+                    <div class="btn btn-b" data-view="trend">趋势预测分析</div>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </div>
+      <div class="modal-mask" id="gen-modal">
+        <div class="modal">
+          <div class="modal-title">学生知识能力画像详情</div>
+          <div class="modal-close" id="gen-modal-close"></div>
+          <div class="modal-body">
+            <div class="modal-grid">
+              <div class="modal-col"><div class="modal-label">学生姓名</div><div class="modal-value">张三</div></div>
+              <div class="modal-col"><div class="modal-label">所属班级</div><div class="modal-value">高一(1)班</div></div>
+              <div class="modal-col"><div class="modal-label">知识能力画像</div><div class="modal-value">雷达图模型</div></div>
+              <div class="modal-col"><div class="modal-label">薄弱知识点识别</div><div class="modal-value">4个</div></div>
+              <div class="modal-col"><div class="modal-label">推荐针对性练习</div><div class="modal-value">已生成</div></div>
+              <div class="modal-col"><div class="modal-label">个性化学习路径</div><div class="modal-value">已定制</div></div>
+              <div class="modal-col"><div class="modal-label">知识点掌握度</div><div class="modal-value">86%</div></div>
+              <div class="modal-col"><div class="modal-label">最近一次考试成绩</div><div class="modal-value">85分</div></div>
+              <div class="modal-col"><div class="modal-label">近3次考试平均分</div><div class="modal-value">82分</div></div>
+              <div class="modal-col"><div class="modal-label">成绩提升幅度</div><div class="modal-value">+10%</div></div>
+              <div class="modal-col"><div class="modal-label">个性化练习完成率</div><div class="modal-value">80%</div></div>
+              <div class="modal-col"><div class="modal-label">错题订正完成率</div><div class="modal-value">70%</div></div>
+              <div class="modal-col"><div class="modal-label">平均每日学习时长</div><div class="modal-value">4.0h</div></div>
+              <div class="modal-col"><div class="modal-label">学习状态评估</div><div class="modal-value">良好</div></div>
+              <div class="modal-col"><div class="modal-label">综合评价</div><div class="modal-value">稳步提升</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script src="./app.js?v=20251111-1"></script>
+  </body>
+</html>
