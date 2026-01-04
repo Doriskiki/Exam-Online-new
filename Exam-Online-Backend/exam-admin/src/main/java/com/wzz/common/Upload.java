@@ -1,5 +1,6 @@
 package com.wzz.common;
 
+import com.wzz.Util.OSSUtil;
 import com.wzz.Util.UploadUtils;
 import com.wzz.entity.User;
 import com.wzz.service.impl.UserServiceImpl;
@@ -38,17 +39,24 @@ public class Upload {
      */
     @PostMapping
     public CommonResult<String> upload(String fileType, MultipartFile file) {
-        // 调用UploadUtils工具类的upload方法，处理文件上传逻辑
-        // 该方法的实现细节对于当前方法是透明的，它负责文件的实际存储和处理
-        String fileName =  uploadUtils.upload(file, fileType);
-
-//        if(Objects.equals(fileType, "avatar")) {
-//            User user = userService.getById(BaseContext.getCurrentId());
-//            String key = "user_" + user.getId();
-//                redisUtils.delete(key);
-//        }
-        // 返回一个表示成功的结果对象，包含上传后的文件名
-        // 这里使用Result.success封装文件名，提供了一种标准化的方式来表示操作成功
-        return new CommonResult<>(200, "上传成功", fileName);
+        log.info("收到文件上传请求，fileType: {}, fileName: {}", fileType, file.getOriginalFilename());
+        try {
+            // 如果是考试用户截图，使用OSS上传
+            if ("examUserImg".equals(fileType)) {
+                log.info("使用OSS上传诚信截图");
+                String url = OSSUtil.picOSS(file);
+                log.info("OSS上传成功，URL: {}", url);
+                return new CommonResult<>(200, "上传成功", url);
+            }
+            
+            // 其他文件类型使用本地上传
+            log.info("使用本地上传，fileType: {}", fileType);
+            String fileName = uploadUtils.upload(file, fileType);
+            log.info("本地上传成功，fileName: {}", fileName);
+            return new CommonResult<>(200, "上传成功", fileName);
+        } catch (Exception e) {
+            log.error("文件上传失败，fileType: {}, fileName: {}", fileType, file.getOriginalFilename(), e);
+            return new CommonResult<>(500, "上传失败: " + e.getMessage(), null);
+        }
     }
 }

@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huacai.exam.mapper.QuestionsMapper">
+
+    <resultMap type="Questions" id="QuestionsResult">
+        <result property="questionId"    column="question_id"    />
+        <result property="type"    column="type"    />
+        <result property="categoryId"    column="category_id"    />
+        <result property="title"    column="title"    />
+        <result property="options"    column="options"    />
+        <result property="answer"    column="answer"    />
+        <result property="analysis"    column="analysis"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="categoryName"    column="name"    />
+    </resultMap>
+
+    <sql id="selectQuestionsVo">
+        select question_id, type, category_id, title, options, answer, analysis, create_time from questions
+    </sql>
+
+    <select id="selectQuestionsList" parameterType="Questions" resultMap="QuestionsResult">
+        select q.question_id, q.type, q.category_id, q.title, q.options, q.answer, q.analysis, q.create_time,
+               c.name
+        from questions q
+        left join category c on q.category_id = c.category_id
+        <where>
+            <if test="type != null  and type != ''"> and q.type = #{type}</if>
+            <if test="categoryId != null  and categoryId != ''"> and q.category_id = #{categoryId}</if>
+            <if test="title != null  and title != ''"> and q.title like concat('%', #{title}, '%')</if>
+        </where>
+    </select>
+
+    <select id="selectQuestionsByQuestionId" parameterType="String" resultMap="QuestionsResult">
+        <include refid="selectQuestionsVo"/>
+        where question_id = #{questionId}
+    </select>
+
+    <insert id="insertQuestions" parameterType="Questions">
+        insert into questions
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="questionId != null">question_id,</if>
+            <if test="type != null and type != ''">type,</if>
+            <if test="categoryId != null and categoryId != ''">category_id,</if>
+            <if test="title != null and title != ''">title,</if>
+            <if test="options != null and options != ''">options,</if>
+            <if test="answer != null and answer != ''">answer,</if>
+            <if test="analysis != null and analysis != ''">analysis,</if>
+            <if test="createTime != null">create_time,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="questionId != null">#{questionId},</if>
+            <if test="type != null and type != ''">#{type},</if>
+            <if test="categoryId != null and categoryId != ''">#{categoryId},</if>
+            <if test="title != null and title != ''">#{title},</if>
+            <if test="options != null and options != ''">#{options},</if>
+            <if test="answer != null and answer != ''">#{answer},</if>
+            <if test="analysis != null and analysis != ''">#{analysis},</if>
+            <if test="createTime != null">#{createTime},</if>
+         </trim>
+    </insert>
+
+    <update id="updateQuestions" parameterType="Questions">
+        update questions
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="type != null and type != ''">type = #{type},</if>
+            <if test="categoryId != null and categoryId != ''">category_id = #{categoryId},</if>
+            <if test="title != null and title != ''">title = #{title},</if>
+            <if test="options != null and options != ''">options = #{options},</if>
+            <if test="answer != null and answer != ''">answer = #{answer},</if>
+            <if test="analysis != null and analysis != ''">analysis = #{analysis},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+        </trim>
+        where question_id = #{questionId}
+    </update>
+
+    <delete id="deleteQuestionsByQuestionId" parameterType="String">
+        delete from questions where question_id = #{questionId}
+    </delete>
+
+    <delete id="deleteQuestionsByQuestionIds" parameterType="String">
+        delete from questions where question_id in
+        <foreach item="questionId" collection="array" open="(" separator="," close=")">
+            #{questionId}
+        </foreach>
+    </delete>
+</mapper>

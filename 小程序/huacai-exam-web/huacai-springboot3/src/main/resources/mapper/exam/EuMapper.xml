@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huacai.exam.mapper.EuMapper">
+
+    <resultMap type="Eu" id="EuResult">
+        <result property="euId"    column="eu_id"    />
+        <result property="examId"    column="exam_id"    />
+        <result property="questionCount"    column="question_count"    />
+        <result property="correctCount"    column="correct_count"    />
+        <result property="score"    column="score"    />
+        <result property="status"    column="status"    />
+        <result property="userId"    column="user_id"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="title"    column="title"    />
+        <result property="time"    column="time"    />
+        <result property="passScore"    column="pass_score"    />
+        <result property="totalScore"    column="total_score"    />
+        <result property="userName"    column="user_name"    />
+    </resultMap>
+
+    <sql id="selectEuVo">
+        select eu_id, exam_id, question_count, correct_count, score, status, user_id, create_time from eu
+    </sql>
+
+    <select id="selectEuList" parameterType="Eu" resultMap="EuResult">
+        select eu.eu_id, eu.exam_id, eu.question_count, eu.correct_count, eu.score,
+               eu.status, eu.user_id, eu.create_time,
+               e.title, e.time, e.pass_score, e.total_score,
+               u.user_name
+        from eu
+        left join exam e on eu.exam_id = e.exam_id
+        left join sys_user u on eu.user_id = u.user_id
+        <where>
+            <if test="examId != null  and examId != ''"> and eu.exam_id = #{examId}</if>
+            <if test="status != null  and status != ''"> and eu.status = #{status}</if>
+            <if test="userId != null "> and eu.user_id = #{userId}</if>
+            <if test="title != null  and title != ''"> and e.title like concat('%', #{title}, '%')</if>
+            <if test="userName != null  and userName != ''"> and u.user_name like concat('%', #{userName}, '%')</if>
+        </where>
+    </select>
+
+    <select id="selectEuByEuId" parameterType="String" resultMap="EuResult">
+        select eu.eu_id, eu.exam_id, eu.question_count, eu.correct_count, eu.score,
+               eu.status, eu.user_id, eu.create_time,
+               e.title, e.time, e.pass_score, e.total_score,
+               u.user_name
+        from eu
+                 left join exam e on eu.exam_id = e.exam_id
+                 left join sys_user u on eu.user_id = u.user_id
+        where eu_id = #{euId}
+    </select>
+
+    <!--根据考试ID和用户ID查询考试用户分配ID-->
+    <select id="selectEuIdByExamIdAndUserId" resultType="java.lang.String">
+        select eu_id
+        from eu
+        where exam_id = #{examId}
+          and user_id = #{userId}
+    </select>
+
+    <!--查询个人已考完的考试列表-->
+    <select id="selectMyExamEndRecord" parameterType="Long" resultMap="EuResult">
+        select eu.eu_id, eu.exam_id, eu.question_count, eu.correct_count, eu.score,
+               eu.status, eu.user_id, eu.create_time,
+               e.title, e.time, e.pass_score, e.total_score,
+               u.user_name
+        from eu
+                 left join exam e on eu.exam_id = e.exam_id
+                 left join sys_user u on eu.user_id = u.user_id
+        where u.user_id = #{userId} and eu.status != '进行中'
+    </select>
+
+    <!--查询个人的考试次数和通过次数-->
+    <select id="selectMyExamCountAndPassCount" resultType="com.huacai.exam.domain.vo.ExamStatusVO">
+        select count(eu.eu_id) as examCount,
+               sum(if(eu.score >= e.pass_score, 1, 0)) as passCount
+        from sys_user u
+        left join eu on u.user_id = eu.user_id
+        left join exam e on eu.exam_id = e.exam_id
+        where u.user_id = #{userId} and eu.status != '进行中'
+    </select>
+
+    <insert id="insertEu" parameterType="Eu">
+        insert into eu
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="euId != null">eu_id,</if>
+            <if test="examId != null and examId != ''">exam_id,</if>
+            <if test="questionCount != null">question_count,</if>
+            <if test="correctCount != null">correct_count,</if>
+            <if test="score != null">score,</if>
+            <if test="status != null and status != ''">status,</if>
+            <if test="userId != null">user_id,</if>
+            <if test="createTime != null">create_time,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="euId != null">#{euId},</if>
+            <if test="examId != null and examId != ''">#{examId},</if>
+            <if test="questionCount != null">#{questionCount},</if>
+            <if test="correctCount != null">#{correctCount},</if>
+            <if test="score != null">#{score},</if>
+            <if test="status != null and status != ''">#{status},</if>
+            <if test="userId != null">#{userId},</if>
+            <if test="createTime != null">#{createTime},</if>
+         </trim>
+    </insert>
+
+    <update id="updateEu" parameterType="Eu">
+        update eu
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="examId != null and examId != ''">exam_id = #{examId},</if>
+            <if test="questionCount != null">question_count = #{questionCount},</if>
+            <if test="correctCount != null">correct_count = #{correctCount},</if>
+            <if test="score != null">score = #{score},</if>
+            <if test="status != null and status != ''">status = #{status},</if>
+            <if test="userId != null">user_id = #{userId},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+        </trim>
+        where eu_id = #{euId}
+    </update>
+
+    <delete id="deleteEuByEuId" parameterType="String">
+        delete from eu where eu_id = #{euId}
+    </delete>
+
+    <delete id="deleteEuByEuIds" parameterType="String">
+        delete from eu where eu_id in
+        <foreach item="euId" collection="array" open="(" separator="," close=")">
+            #{euId}
+        </foreach>
+    </delete>
+</mapper>

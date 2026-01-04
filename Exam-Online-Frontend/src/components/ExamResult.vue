@@ -2,19 +2,19 @@
   <el-container>
     <el-header height="150">
       <el-button icon="el-icon-top-left" @click="$router.back()" type="text" size="medium">返回列表</el-button>
-      <el-card style="height: 100px; text-align: center">
-        <span class="examName">{{ examInfo.examName }}</span>
-        <span class="examTime">({{ examRecord.examTime }})</span>
+      <el-card style="height: 100px; text-align: center" v-if="examInfo && examRecord">
+        <span class="examName">{{ examInfo.examName || '' }}</span>
+        <span class="examTime" v-if="examRecord.examTime">({{ examRecord.examTime }})</span>
 
         <el-row style="margin-top: 15px;display: flex; align-items: center; justify-content: center;column-gap: 20px">
           <el-tooltip class="item" effect="dark" content="包括(单选、多选、判断题)" placement="top-start">
              <span style="font-weight: 800;font-size: 17px;color: red">
-          本次客观题得分: {{ examRecord.logicScore }}分</span>
+          本次客观题得分: {{ examRecord.logicScore || 0 }}分</span>
           </el-tooltip>
 
           <el-tooltip class="item" effect="dark" content="简答题与客观题" placement="top-start">
           <span style="font-weight: 800;font-size: 17px; color: #1f90ff">
-          试卷总分: {{ examInfo.totalScore }}分</span>
+          试卷总分: {{ examInfo.totalScore || 0 }}分</span>
           </el-tooltip>
 
           <el-tooltip class="item" effect="dark" content="简答题与客观题" placement="top-start">
@@ -107,9 +107,9 @@
     data () {
       return {
         //考试记录信息
-        examRecord: {},
+        examRecord: null,
         //考试的信息
-        examInfo: {},
+        examInfo: null,
         //当前考试的题目
         questionInfo: [],
         //页面加载
@@ -164,7 +164,7 @@
       //查询用户当时考试的信息
       getExamRecord () {
         this.$http.get(this.API.getExamRecordById + '/' + this.$route.params.recordId).then((resp) => {
-          if (resp.data.code === 200) {
+          if (resp.data.code === 200 && resp.data.data) {
             this.examRecord = resp.data.data
             this.getExamInfoById(resp.data.data.examId)
             this.userAnswer = resp.data.data.userAnswers.split('-')
@@ -176,7 +176,15 @@
             })
             //数据加载完毕
             this.loading.close()
+          } else {
+            this.loading.close()
+            this.$message.error('获取考试记录失败，请稍后重试')
+            this.$router.push('/examOnline')
           }
+        }).catch(err => {
+          this.loading.close()
+          this.$message.error('获取考试记录失败：' + (err.message || '网络错误'))
+          this.$router.push('/examOnline')
         })
       },
       //根据考试id查询考试信息

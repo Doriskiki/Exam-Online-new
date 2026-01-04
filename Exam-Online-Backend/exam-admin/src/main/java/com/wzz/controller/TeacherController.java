@@ -10,6 +10,7 @@ import com.wzz.Util.OSSUtil;
 import com.wzz.Util.RedisUtil;
 import com.wzz.Util.SaltEncryption;
 import com.wzz.Util.TokenUtils;
+import com.wzz.mq.ExamSubmitMessage;
 import com.wzz.entity.*;
 import com.wzz.service.impl.*;
 import com.wzz.vo.*;
@@ -18,7 +19,9 @@ import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -59,6 +62,15 @@ public class TeacherController {
     @Autowired
     private AnswerServiceImpl answerService;
 
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
+
+    @Value("${mq.exam.exchange:exam.submit.exchange}")
+    private String examSubmitExchange;
+
+    @Value("${mq.exam.routing-key:exam.submit.key}")
+    private String examSubmitRoutingKey;
+
 
 
     //注入自己的redis工具类
@@ -78,7 +90,8 @@ public class TeacherController {
         } else {//redis无缓存
             List<QuestionBank> questionBanks = questionBankService.list(new QueryWrapper<>());
             //设置默认缓存时间(10分钟) + 随机缓存时间(0-5分钟 )  来防止缓存雪崩和击穿
-//            redisUtil.set("questionBanks", questionBanks, 60 * 5 + new Random().nextInt(5) * 60);
+            int ttl = 60 * 5 + new Random().nextInt(120);
+            redisUtil.set("questionBanks", questionBanks, ttl);
             return new CommonResult<>(200, "success", questionBanks);
         }
     }
@@ -444,7 +457,8 @@ public class TeacherController {
                     questionVo.setAnswer(qa);
                 }
             }
-//            redisUtil.set("questionVo:" + id, questionVo, 60 * 5 * new Random().nextInt(2));
+            int ttl = 60 * 5 + new Random().nextInt(120);
+            redisUtil.set("questionVo:" + id, questionVo, ttl);
             return new CommonResult<>(200, "查询成功", questionVo);
         }
     }
@@ -730,7 +744,8 @@ public class TeacherController {
                 questionVo.setAnswer(handleAnswer);
                 questionVos.add(questionVo);
             }
-//            redisUtil.set("questionBankQuestion:" + bankId, questionVos, 60 * 5 + new Random().nextInt(2));
+            int ttl = 60 * 5 + new Random().nextInt(120);
+            redisUtil.set("questionBankQuestion:" + bankId, questionVos, ttl);
             return new CommonResult<>(200, "当前题库题目查询成功", questionVos);
         }
     }
@@ -1036,8 +1051,8 @@ public class TeacherController {
             
             addExamByQuestionVo.setQuestionIds(examQuestion.getQuestionIds());
             addExamByQuestionVo.setScores(examQuestion.getScores());
-            
-//            redisUtil.set("examInfo:" + examId, addExamByQuestionVo, 60 * 5 * new Random().nextInt(2));
+            int ttl = 60 * 5 + new Random().nextInt(120);
+            redisUtil.set("examInfo:" + examId, addExamByQuestionVo, ttl);
             return new CommonResult<>(200, "查询成功", addExamByQuestionVo);
         }
     }
@@ -1097,57 +1112,21 @@ public class TeacherController {
     public CommonResult<Integer> addExamRecord(@RequestBody ExamRecord examRecord, HttpServletRequest request) {
         log.info("执行了===>TeacherController中的addExamRecord方法");
         String token = request.getHeader("authorization");
-        //当前用户对象的信息
         TokenVo tokenVo = TokenUtils.verifyToken(token);
-        User user = userService.getOne(new QueryWrapper<User>().eq("username", tokenVo.getUsername()));
-        //设置考试信息的字段
-        examRecord.setUserId(user.getId());
-        //设置id
+        // 预生成记录ID（保持与原同步规则一致）
         List<ExamRecord> examRecords = examRecordService.list(new QueryWrapper<>());
         int id = 1;
-        if (examRecords.size() > 0) {
+        if (!examRecords.isEmpty()) {
             id = examRecords.get(examRecords.size() - 1).getRecordId() + 1;
         }
         examRecord.setRecordId(id);
 
-        //设置逻辑题目的分数
-        //查询所有的题目答案信息
-        List<Answer> answers = answerService.list(new QueryWrapper<Answer>().in("question_id", Arrays.asList(examRecord.getQuestionIds().split(","))));
-        //查询考试的题目的分数
-        HashMap<String, String> map = new HashMap<>();//key是题目的id  value是题目分值
-        ExamQuestion examQuestion = examQuestionService.getOne(new QueryWrapper<ExamQuestion>().eq("exam_id", examRecord.getExamId()));
-        //题目的id
-        String[] ids = examQuestion.getQuestionIds().split(",");
-        //题目在考试中对应的分数
-        String[] scores = examQuestion.getScores().split(",");
-        for (int i = 0; i < ids.length; i++) {
-            map.put(ids[i], scores[i]);
-        }
-        //逻辑分数
-        int logicScore = 0;
-        //错题的id
-        StringBuffer sf = new StringBuffer();
-        //用户的答案
-        String[] userAnswers = examRecord.getUserAnswers().split("-");
-        for (int i = 0; i < examRecord.getQuestionIds().split(",").length; i++) {
-            int index = SaltEncryption.getIndex(answers, Integer.parseInt(examRecord.getQuestionIds().split(",")[i]));
-            if (index != -1) {
-                if (Objects.equals(userAnswers[i], answers.get(index).getTrueOption())) {
-                    logicScore += Integer.parseInt(map.get(examRecord.getQuestionIds().split(",")[i]));
-                } else {
-                    sf.append(examRecord.getQuestionIds().split(",")[i]).append(",");
-                }
-            }
-        }
-        examRecord.setLogicScore(logicScore);
-        if (sf.length() > 0) {//存在错的逻辑题
-            examRecord.setErrorQuestionIds(sf.toString().substring(0, sf.toString().length() - 1));
-        }
+        ExamSubmitMessage message = new ExamSubmitMessage();
+        message.setUsername(tokenVo.getUsername());
+        message.setExamRecord(examRecord);
 
-        System.out.println(examRecord);
-        examRecord.setExamTime(new Date());
-        examRecordService.save(examRecord);
-        return new CommonResult<>(200, "考试记录保存成功", id);
+        rabbitTemplate.convertAndSend(examSubmitExchange, examSubmitRoutingKey, message);
+        return new CommonResult<>(200, "考试记录已提交，正在异步保存", id);
     }
 
     /**
@@ -1162,10 +1141,14 @@ public class TeacherController {
     public CommonResult<Object> getExamRecordById(@PathVariable Integer recordId) {
         log.info("执行了===>TeacherController中的getExamRecordById方法");
         if (redisUtil.get("examRecord:" + recordId) != null) {
-            return new CommonResult<>(200, "考试信息查询成功", redisUtil.get("examRecord:" + recordId));
+            ExamRecord cachedRecord = (ExamRecord) redisUtil.get("examRecord:" + recordId);
+            log.info("从Redis获取考试记录，recordId: {}, creditImgUrl: {}", recordId, cachedRecord.getCreditImgUrl());
+            return new CommonResult<>(200, "考试信息查询成功", cachedRecord);
         } else {
             ExamRecord examRecord = examRecordService.getOne(new QueryWrapper<ExamRecord>().eq("record_id", recordId));
-//            redisUtil.set("examRecord:" + recordId, examRecord, 60 * 5 + new Random().nextInt(2) * 60);
+            log.info("从数据库获取考试记录，recordId: {}, creditImgUrl: {}", recordId, examRecord != null ? examRecord.getCreditImgUrl() : "null");
+            int ttl = 60 * 5 + new Random().nextInt(120);
+            redisUtil.set("examRecord:" + recordId, examRecord, ttl);
             return new CommonResult<>(200, "考试信息查询成功", examRecord);
         }
     }
@@ -1197,7 +1180,8 @@ public class TeacherController {
                 log.warn("考试ID: {} 没有关联的题目", examId);
                 return new CommonResult<>(404, "该考试还未添加题目");
             }
-            
+            int ttl = 60 * 5 + new Random().nextInt(120);
+            redisUtil.set("examQuestion:" + examId, examQuestion, ttl);
             return new CommonResult<>(200, "查询考试中题目和分值成功", examQuestion);
         }
     }

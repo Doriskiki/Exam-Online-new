@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huacai.exam.mapper.ErMapper">
+
+    <resultMap type="Er" id="ErResult">
+        <result property="erId"    column="er_id"    />
+        <result property="examId"    column="exam_id"    />
+        <result property="questionId"    column="question_id"    />
+        <result property="userAnswer"    column="user_answer"    />
+        <result property="correctAnswer"    column="correct_answer"    />
+        <result property="isCorrect"    column="is_correct"    />
+        <result property="userId"    column="user_id"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="examTitle"    column="examTitle"    />
+        <result property="title"    column="title"    />
+        <result property="userName"    column="user_name"    />
+        <result property="analysis"    column="analysis"    />
+        <result property="options"    column="options"    />
+        <result property="type"    column="type"    />
+    </resultMap>
+
+    <sql id="selectErVo">
+        select er_id, exam_id, question_id, user_answer, correct_answer, is_correct, user_id, create_time from er
+    </sql>
+
+    <select id="selectErList" parameterType="Er" resultMap="ErResult">
+        select er.er_id, er.exam_id, er.question_id, er.user_answer, er.correct_answer, er.is_correct,
+               er.user_id, er.create_time,
+               e.title as examTitle,
+               q.title,
+               u.user_name
+        from er
+        left join exam e on er.exam_id = e.exam_id
+        left join questions q on er.question_id = q.question_id
+        left join sys_user u on er.user_id = u.user_id
+        <where>
+            <if test="examId != null  and examId != ''"> and er.exam_id = #{examId}</if>
+            <if test="questionId != null  and questionId != ''"> and er.question_id = #{questionId}</if>
+            <if test="isCorrect != null  and isCorrect != ''"> and er.is_correct = #{isCorrect}</if>
+            <if test="userId != null "> and er.user_id = #{userId}</if>
+            <if test="examTitle != null  and examTitle != ''"> and e.title like concat('%', #{examTitle}, '%')</if>
+        </where>
+    </select>
+
+    <select id="selectErByErId" parameterType="String" resultMap="ErResult">
+        <include refid="selectErVo"/>
+        where er_id = #{erId}
+    </select>
+
+    <!--根据考试ID和用户ID查询考试结果列表-->
+    <select id="selectErListByExamIdAndUserId" resultMap="ErResult">
+        select er.er_id, er.exam_id, er.question_id, er.user_answer, er.correct_answer, er.is_correct,
+               er.user_id, er.create_time,
+               q.analysis, q.options, q.type, q.title
+        from er
+        left join questions q on er.question_id = q.question_id
+        where er.exam_id = #{examId} and er.user_id = #{userId}
+    </select>
+
+    <insert id="insertEr" parameterType="Er">
+        insert into er
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="erId != null">er_id,</if>
+            <if test="examId != null and examId != ''">exam_id,</if>
+            <if test="questionId != null and questionId != ''">question_id,</if>
+            <if test="userAnswer != null and userAnswer != ''">user_answer,</if>
+            <if test="correctAnswer != null and correctAnswer != ''">correct_answer,</if>
+            <if test="isCorrect != null and isCorrect != ''">is_correct,</if>
+            <if test="userId != null">user_id,</if>
+            <if test="createTime != null">create_time,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="erId != null">#{erId},</if>
+            <if test="examId != null and examId != ''">#{examId},</if>
+            <if test="questionId != null and questionId != ''">#{questionId},</if>
+            <if test="userAnswer != null and userAnswer != ''">#{userAnswer},</if>
+            <if test="correctAnswer != null and correctAnswer != ''">#{correctAnswer},</if>
+            <if test="isCorrect != null and isCorrect != ''">#{isCorrect},</if>
+            <if test="userId != null">#{userId},</if>
+            <if test="createTime != null">#{createTime},</if>
+         </trim>
+    </insert>
+
+    <update id="updateEr" parameterType="Er">
+        update er
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="examId != null and examId != ''">exam_id = #{examId},</if>
+            <if test="questionId != null and questionId != ''">question_id = #{questionId},</if>
+            <if test="userAnswer != null and userAnswer != ''">user_answer = #{userAnswer},</if>
+            <if test="correctAnswer != null and correctAnswer != ''">correct_answer = #{correctAnswer},</if>
+            <if test="isCorrect != null and isCorrect != ''">is_correct = #{isCorrect},</if>
+            <if test="userId != null">user_id = #{userId},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+        </trim>
+        where er_id = #{erId}
+    </update>
+
+    <delete id="deleteErByErId" parameterType="String">
+        delete from er where er_id = #{erId}
+    </delete>
+
+    <delete id="deleteErByErIds" parameterType="String">
+        delete from er where er_id in
+        <foreach item="erId" collection="array" open="(" separator="," close=")">
+            #{erId}
+        </foreach>
+    </delete>
+</mapper>
