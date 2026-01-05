@@ -43,6 +43,7 @@
         round
         type="primary"
         icon="el-icon-plus"
+        style="margin-left: 5px"
         @click="$router.push('/addExam')"
         >添加
       </el-button>

@@ -135,28 +135,58 @@ export default {
       this.$refs["loginForm"].validate(valid => {
         if (valid) {
           //验证通过
+          console.log('准备登录，账号:', this.loginForm.username);
           const data = new FormData();
           data.append("username", this.loginForm.username);
           data.append("password", this.loginForm.password);
           //发送登录请求
           this.$http.post(this.API.login, data).then(resp => {
+            console.log('登录响应:', resp.data);
             if (resp.data.code === 200) {
               localStorage.setItem("authorization", resp.data.data);
               
-              // 获取并保存用户ID
+              // 获取并保存用户ID和角色信息
               this.$http.get(this.API.checkToken).then(res => {
+                console.log('checkToken响应:', res.data);
                 if (res.data.code === 200) {
+                  const userData = res.data.data;
+                  console.log('用户数据:', userData);
+                  
                   // 支持多种字段名
-                  const userId = res.data.data.userId || res.data.data.id;
+                  const userId = userData.userId || userData.id;
+                  const roleId = userData.roleId || userData.role;
+                  const username = userData.username;
+                  
                   if (userId) {
                     localStorage.setItem("userId", userId);
                     console.log('已保存用户ID:', userId);
+                  }
+                  if (roleId !== undefined) {
+                    localStorage.setItem("roleId", roleId);
+                    console.log('已保存角色ID:', roleId);
+                    
+                    // 显示角色信息
+                    let roleName = '未知';
+                    if (roleId === 1) roleName = '管理员';
+                    else if (roleId === 2) roleName = '教师';
+                    else if (roleId === 3) roleName = '学生';
+                    
+                    console.log('%c用户角色: ' + roleName, 'color: red; font-size: 16px; font-weight: bold;');
+                    
+                    // 如果不是管理员，给出提示
+                    if (roleId !== 1) {
+                      console.warn('当前登录的不是管理员账号！roleId =', roleId);
+                    }
                   } else {
-                    console.error('无法从checkToken获取userId，返回数据:', res.data.data);
+                    console.error('无法获取角色ID！用户数据:', userData);
+                  }
+                  if (username) {
+                    localStorage.setItem("username", username);
+                    console.log('已保存用户名:', username);
                   }
                 }
               }).catch(error => {
-                console.error('获取用户ID失败:', error);
+                console.error('获取用户信息失败:', error);
               });
               
               this.$notify({
@@ -226,18 +256,26 @@ export default {
 .el-container {
   min-width: 417px;
   height: 100%;
-  background: url("../assets/imgs/login-bg.jpg");
+  background: linear-gradient(135deg, #E0F9FF 0%, #B8F0FF 50%, #A0E8FF 100%);
   background-size: 100% 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 a {
   text-decoration: none;
-  color: blueviolet;
+  color: #00D9FF;
 }
 
 /*  card样式  */
 .box-card {
   width: 450px;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 12px 40px rgba(0, 217, 255, 0.2);
+  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.95);
 }
 
 .el-card {
@@ -245,17 +283,30 @@ a {
   top: 45%;
   left: 50%;
   transform: translateX(-50%) translateY(-50%);
-  border-radius: 25px;
+  border-radius: 24px;
+  border: 2px solid rgba(0, 217, 255, 0.1);
+  
+  :deep(.el-card__header) {
+    background: linear-gradient(135deg, #00D9FF 0%, #4FD1C5 100%);
+    border-bottom: none;
+    padding: 30px 20px;
+  }
+  
+  :deep(.el-card__body) {
+    padding: 30px 40px;
+  }
 }
 
 .card-header {
   text-align: center;
-  font-size: 25px;
+  font-size: 28px;
   font-weight: 700;
-  color: #409eff;
+  color: #ffffff;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 
   p {
-    font-size: 25px;
+    font-size: 28px;
+    margin: 0;
   }
 }
 
@@ -267,10 +318,32 @@ a {
 /*  按钮样式 */
 :deep(.el-button) {
   width: 48%;
+  border-radius: 20px;
+  transition: all 0.3s ease;
+  border: none;
+  
   span {
     font-size: 16px;
     font-weight: bold !important;
     color: #ffffff;
+  }
+  
+  &.el-button--primary {
+    background: linear-gradient(135deg, #00D9FF 0%, #4FD1C5 100%);
+    
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0, 217, 255, 0.4);
+    }
+  }
+  
+  &.el-button--warning {
+    background: linear-gradient(135deg, #FFB84D 0%, #FF9A4D 100%);
+    
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(255, 184, 77, 0.4);
+    }
   }
 }
 
@@ -280,6 +353,7 @@ a {
 }
 :deep(.el-input__icon) {
   font-size: 18px;
+  color: #00D9FF;
 }
 
 /*  验证码的输入框*/
@@ -288,8 +362,19 @@ a {
 }
 
 :deep(.el-input__inner) {
-  border-radius: 30px !important;
+  border-radius: 20px !important;
   padding-left: 40px;
   font-size: 16px;
+  border: 2px solid #E0F9FF;
+  transition: all 0.3s ease;
+  
+  &:focus {
+    border-color: #00D9FF;
+    box-shadow: 0 0 0 3px rgba(0, 217, 255, 0.1);
+  }
+}
+
+:deep(.el-form-item) {
+  margin-bottom: 20px;
 }
 </style>

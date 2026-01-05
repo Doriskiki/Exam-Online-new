@@ -58,7 +58,7 @@
         <el-table-column
           align="center"
           prop="passScore"
-          label="及格线"
+          label="及格分"
         ></el-table-column>
         <el-table-column align="center" label="总得分">
           <template slot-scope="scope">
@@ -148,7 +148,7 @@
             @click="showBigImg(url)"
           />
 
-          <!--单选 和 判断 的答案列表-->
+          <!--单选、多选、判断 的答案列表-->
           <div
             style="margin-top: 25px"
             v-show="item.questionType === 1 || item.questionType === 3"
@@ -214,9 +214,9 @@
         </div>
       </el-card>
       <div slot="footer" class="dialog-footer">
-        <el-button @click="errorQuestionDialog = false">取 消</el-button>
+        <el-button @click="errorQuestionDialog = false">取消</el-button>
         <el-button type="primary" @click="errorQuestionDialog = false"
-          >确 定</el-button
+          >确定</el-button
         >
       </div>
     </el-dialog>
@@ -330,7 +330,7 @@ export default {
       this.queryInfo.pageSize = val;
       this.getMyGrade();
     },
-    //分页插件的页数
+    //分页插件的页码改变
     handleCurrentChange(val) {
       this.queryInfo.pageNo = val;
       this.getMyGrade();
@@ -342,7 +342,7 @@ export default {
         .then(resp => {
           if (resp.data.code === 200) {
             this.questionInfo.push(resp.data.data);
-            //重置问题的顺序 单选 多选 判断
+            //重置问题的顺序：单选、多选、判断
             this.questionInfo = this.questionInfo.sort(function(a, b) {
               return a.questionType - b.questionType;
             });
@@ -431,6 +431,99 @@ export default {
 .el-container {
   width: 100%;
   height: 100%;
+  background: linear-gradient(135deg, #F0FDFF 0%, #E0F9FF 100%);
+  padding: 20px;
+
+  :deep(.el-table) {
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(0, 217, 255, 0.15);
+    background: #ffffff;
+    
+    thead th {
+      background: linear-gradient(135deg, #00D9FF 0%, #4FD1C5 100%);
+      color: #ffffff;
+      font-weight: bold;
+    }
+  }
+
+  :deep(.el-select) {
+    .el-input__inner {
+      border-radius: 20px;
+      border: 2px solid #00D9FF;
+      transition: all 0.3s ease;
+      
+      &:focus {
+        border-color: #4FD1C5;
+        box-shadow: 0 0 0 3px rgba(0, 217, 255, 0.1);
+      }
+    }
+  }
+
+  :deep(.el-button) {
+    border-radius: 20px;
+    transition: all 0.3s ease;
+    
+    &.el-button--primary {
+      background: linear-gradient(135deg, #00D9FF 0%, #4FD1C5 100%);
+      border: none;
+      
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0, 217, 255, 0.4);
+      }
+    }
+    
+    &.el-button--danger {
+      background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+      border: none;
+      
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
+      }
+    }
+  }
+
+  :deep(.el-dialog) {
+    border-radius: 24px;
+    overflow: hidden;
+    
+    .el-dialog__header {
+      background: linear-gradient(135deg, #00D9FF 0%, #4FD1C5 100%);
+      padding: 20px;
+      
+      .el-dialog__title {
+        color: #ffffff;
+        font-weight: bold;
+      }
+    }
+    
+    .el-card {
+      border-radius: 16px;
+      border: none;
+      box-shadow: 0 4px 12px rgba(0, 217, 255, 0.1);
+    }
+  }
+
+  :deep(.el-pagination) {
+    .el-pager li {
+      border-radius: 8px;
+      transition: all 0.3s ease;
+      
+      &.active {
+        background: linear-gradient(135deg, #00D9FF 0%, #4FD1C5 100%);
+      }
+      
+      &:hover {
+        color: #00D9FF;
+      }
+    }
+    
+    button {
+      border-radius: 8px;
+    }
+  }
 }
 
 @keyframes leftMoveIn {
@@ -445,8 +538,8 @@ export default {
 }
 
 .examName {
-  color: #160f58;
-  border-bottom: 4px solid #ffd550;
+  color: #00D9FF;
+  border-bottom: 4px solid #4FD1C5;
   font-size: 18px;
   font-weight: 700;
   padding-bottom: 10px;
@@ -463,10 +556,17 @@ export default {
   display: block;
   width: 400px;
   padding: 48px 20px 10px 20px;
-  border-radius: 4px;
-  border: 1px solid #dcdfe6;
+  border-radius: 16px;
+  border: 2px solid #F0FDFF;
   margin-bottom: 10px;
   position: relative;
+  transition: all 0.3s ease;
+  background: #ffffff;
+
+  &:hover {
+    border-color: #00D9FF;
+    box-shadow: 0 4px 12px rgba(0, 217, 255, 0.2);
+  }
 
   span {
     position: absolute;
@@ -478,9 +578,7 @@ export default {
 
 .num {
   display: inline-block;
-  //background: url('../assets/imgs/examTitle.png') no-repeat 100% 100%;
-  //background-size: contain;
-  background: #1f90ff;
+  background: linear-gradient(135deg, #00D9FF 0%, #4FD1C5 100%);
   border-radius: 50%;
   height: 37px;
   width: 37px;
@@ -490,18 +588,17 @@ export default {
   text-align: center;
   margin-right: 15px;
   font-weight: 800;
+  box-shadow: 0 4px 12px rgba(0, 217, 255, 0.3);
 }
 
-/*选中的答案*/
 .active {
-  border: 1px solid #1f90ff !important;
-  opacity: 0.5;
+  border: 2px solid #00D9FF !important;
+  background: rgba(0, 217, 255, 0.1);
 }
 
-/*  选中的答案且是正确答案*/
 .activeAndTrue {
-  border: 1px solid #1f90ff !important;
-  opacity: 0.5;
+  border: 2px solid #00D9FF !important;
+  background: rgba(0, 217, 255, 0.1);
   height: 15px;
   width: 15px;
   background-size: contain;
@@ -523,17 +620,22 @@ export default {
 
 .ques-analysis {
   padding: 30px 40px;
-  background: #f6f6f8;
+  background: linear-gradient(135deg, #F0FDFF 0%, #ffffff 100%);
   margin-bottom: 70px;
+  border-radius: 16px;
 }
+
 .el-table {
-  box-shadow: 0 0 1px 1px gainsboro;
+  box-shadow: 0 8px 24px rgba(0, 217, 255, 0.15);
   height: calc(100% - 60px) !important;
   overflow: auto !important;
+  border-radius: 16px;
 }
+
 .el-form-item {
   margin-bottom: 10px;
 }
+
 .el-form {
   :deep(.el-input) {
     width: 100% !important;

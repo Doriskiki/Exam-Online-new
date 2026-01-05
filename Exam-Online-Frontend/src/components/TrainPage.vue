@@ -1,6 +1,6 @@
 <template>
   <el-container v-loading="loading">
-    <el-main>
+    <el-main v-if="currentBankQuestion.length > 0 && currentBankQuestion[curIndex]">
       <el-row>
         <el-card style="padding: 15px">
           <!--题目信息-->
@@ -8,46 +8,70 @@
             <span v-if="currentBankQuestion[curIndex].questionType === 1">【单选题】</span>
             <span v-else-if="currentBankQuestion[curIndex].questionType === 2">【多选题】</span>
             <span v-else>【判断题】</span>
-            {{ curIndex+1 + '/' + currentBankQuestion.length + '、' }}
+            {{ curIndex+1 + '/' + currentBankQuestion.length + '题' }}
             <span>{{ currentBankQuestion[curIndex].questionContent}}:</span>
           </div>
 
           <!--题目中的配图-->
-          <img v-for="url in currentBankQuestion[curIndex].images" :src="url" title="点击查看大图" alt="题目图片"
-               style="width: 200px;height: 200px;cursor: pointer" @click="showBigImg(url)">
+          <div v-if="currentBankQuestion[curIndex].images && currentBankQuestion[curIndex].images.length > 0" style="margin-top: 15px;">
+            <img v-for="(url, imgIndex) in currentBankQuestion[curIndex].images" 
+                 :key="imgIndex"
+                 :src="url" 
+                 title="点击查看大图" 
+                 alt="题目图片"
+                 style="width: 200px;height: 200px;cursor: pointer;margin-right: 10px;object-fit: cover;border: 2px solid #F0FDFF;border-radius: 8px;" 
+                 @click="showBigImg(url)"
+                 @error="handleImageError">
+          </div>
 
           <!--单选的答案列表-->
           <div style="margin-top: 25px" v-show="currentBankQuestion[curIndex].questionType !== 2">
             <div class="el-radio-group">
-              <label v-for="(item,index) in currentBankQuestion[curIndex].answer"
-                     @click="checkSingleAnswer(index)"
-                     :class="index === userAnswer[curIndex] ? 'active' : ''">
-                <span>{{ optionName[index] + '、' + item.answer}}</span>
-                <img style="position: absolute;left:100%;top:50%;transform: translateY(-50%);
-                  width: 40px;height: 40px;float: right;cursor: pointer;" title="点击查看大图"
-                     v-if="item.images !== null"
-                     v-for="i2 in item.images" :src="i2" alt="" @mouseover="showBigImg(i2)">
-              </label>
+              <div v-for="(item,index) in currentBankQuestion[curIndex].answer"
+                   :key="index"
+                   class="answer-option"
+                   @click="checkSingleAnswer(index)"
+                   :class="{'active': index === userAnswer[curIndex]}">
+                <span>{{ optionName[index] + '.' + item.answer}}</span>
+                <div v-if="item.images !== null && item.images.length > 0" class="answer-images">
+                  <img v-for="(i2, i2Index) in item.images" 
+                       :key="i2Index"
+                       :src="i2" 
+                       alt="" 
+                       title="点击查看大图"
+                       @click.stop="showBigImg(i2)"
+                       @error="handleImageError"
+                       style="width: 40px;height: 40px;cursor: pointer;margin-left: 10px;object-fit: cover;border: 2px solid #F0FDFF;border-radius: 4px;">
+                </div>
+              </div>
             </div>
           </div>
           <!--单选的提示-->
           <div
-            v-if="currentBankQuestion[curIndex].questionType !== 2 && userAnswer[curIndex] && (userAnswer[curIndex]+'') !== trueAnswer[curIndex]">
+            v-if="currentBankQuestion[curIndex].questionType !== 2 && userAnswer[curIndex] !== undefined && (userAnswer[curIndex]+'') !== trueAnswer[curIndex]">
             <span style="color: #1f90ff" v-text="'正确答案：' + optionName[trueAnswerIndex]"></span>
           </div>
 
           <!--多选的答案列表-->
           <div style="margin-top: 25px" v-show="currentBankQuestion[curIndex].questionType === 2">
             <div class="el-radio-group">
-              <label v-for="(item,index) in currentBankQuestion[curIndex].answer"
-                     @click="selectedMultipleAnswer(index)"
-                     :class="(userAnswer[curIndex]+'').indexOf(index+'') !== -1? 'active' : ''">
-                <span>{{ optionName[index] + '、' + item.answer}}</span>
-                <img style="position: absolute;left:100%;top:50%;transform: translateY(-50%);
-                  width: 40px;height: 40px;float: right;cursor: pointer;" title="点击查看大图"
-                     v-if="item.images !== null"
-                     v-for="i2 in item.images" :src="i2" alt="" @mouseover="showBigImg(i2)">
-              </label>
+              <div v-for="(item,index) in currentBankQuestion[curIndex].answer"
+                   :key="index"
+                   class="answer-option"
+                   @click="selectedMultipleAnswer(index)"
+                   :class="{'active': userAnswer[curIndex] !== undefined && (userAnswer[curIndex]+'').indexOf(index+'') !== -1}">
+                <span>{{ optionName[index] + '.' + item.answer}}</span>
+                <div v-if="item.images !== null && item.images.length > 0" class="answer-images">
+                  <img v-for="(i2, i2Index) in item.images" 
+                       :key="i2Index"
+                       :src="i2" 
+                       alt="" 
+                       title="点击查看大图"
+                       @click.stop="showBigImg(i2)"
+                       @error="handleImageError"
+                       style="width: 40px;height: 40px;cursor: pointer;margin-left: 10px;object-fit: cover;border: 2px solid #F0FDFF;border-radius: 4px;">
+                </div>
+              </div>
               <el-button size="small" type="primary" v-show="!confirmMultiple.includes(curIndex)"
                          @click="confirmMultipleAnswer()">
                 确认答案
@@ -63,10 +87,8 @@
 
           <div style="margin-top: 25px">
             <el-button type="primary" :disabled="curIndex<1" @click="curIndex--">上一题</el-button>
-            <el-button type="primary" :disabled="curIndex>=currentBankQuestion.length-1" @click="curIndex++">下一题
-            </el-button>
-            <el-button style="float: right" @click="showAnswerCard = !showAnswerCard">{{ showAnswerCard ? '隐藏答题卡' :
-              '显示答题卡' }}
+            <el-button type="primary" :disabled="curIndex>=currentBankQuestion.length-1" @click="curIndex++">下一题</el-button>
+            <el-button style="float: right" @click="showAnswerCard = !showAnswerCard">{{ showAnswerCard ? '隐藏答题卡' : '显示答题卡' }}
             </el-button>
           </div>
 
@@ -271,6 +293,11 @@
         this.bigImgUrl = url
         this.bigImgDialog = true
       },
+      //图片加载失败处理
+      handleImageError(e) {
+        console.error('图片加载失败:', e.target.src)
+        e.target.style.display = 'none'
+      },
       //检验单选题的用户选择的答案
       checkSingleAnswer (index) {
         if (this.userAnswer[this.curIndex] === undefined && (index + '') === this.trueAnswer[this.curIndex]) {//答题并且是对的
@@ -310,7 +337,7 @@
           item.answer.map((i2, index2) => {
             if (i2.isTrue === 'true') x.push(index2)
           })
-          //放入正确答案中
+          //放入正确答案组
           this.trueAnswer[index] = x.join(',')
         })
       },
@@ -355,10 +382,8 @@
   .el-container {
     width: 100%;
     height: 100%;
-  }
-
-  .el-container {
-    //animation: leftMoveIn .7s ease-in;
+    background: linear-gradient(135deg, #F0FDFF 0%, #E0F9FF 100%);
+    padding: 20px;
   }
 
   @keyframes leftMoveIn {
@@ -381,40 +406,94 @@
     font-size: 18px;
   }
 
-  .el-radio-group label {
+  .el-radio-group .answer-option {
     display: block;
     width: 400px;
-    padding: 48px 20px 10px 20px;
-    border-radius: 4px;
-    border: 1px solid #dcdfe6;
+    padding: 15px 20px;
+    border-radius: 16px;
+    border: 2px solid #F0FDFF;
     margin-bottom: 10px;
     cursor: pointer;
     position: relative;
+    transition: all 0.3s ease;
+    background: #ffffff;
+    min-height: 60px;
+
+    &:hover {
+      border-color: #00D9FF;
+      box-shadow: 0 4px 12px rgba(0, 217, 255, 0.2);
+    }
+
+    &.active {
+      border: 2px solid #00D9FF !important;
+      background: rgba(0, 217, 255, 0.1) !important;
+      box-shadow: 0 4px 12px rgba(0, 217, 255, 0.3);
+    }
 
     span {
-      position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
       font-size: 16px;
+      line-height: 1.5;
+      display: block;
+      word-wrap: break-word;
+    }
+    
+    .answer-images {
+      margin-top: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
     }
   }
 
-  .el-radio-group label:hover {
-    background-color: rgb(245, 247, 250);
-  }
-
   /*当前选中的答案*/
-  .active {
-    border: 1px solid #1f90ff !important;
-    opacity: .5;
-  }
+  /* .active 样式已经合并到 .answer-option 中 */
 
   /*答题卡的正确的颜色*/
   .true {
-    background-color: rgb(19, 206, 102);;
+    background: linear-gradient(135deg, #4caf50 0%, #66bb6a 100%);
+    color: #ffffff;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+    }
   }
 
   .wrong {
-    background-color: rgb(255, 73, 73);
+    background: linear-gradient(135deg, #f44336 0%, #e57373 100%);
+    color: #ffffff;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(244, 67, 54, 0.3);
+    }
+  }
+
+  :deep(.el-card) {
+    border-radius: 16px;
+    border: none;
+    box-shadow: 0 8px 24px rgba(0, 217, 255, 0.15);
+    background: #ffffff;
+    margin-bottom: 20px;
+  }
+
+  :deep(.el-button) {
+    border-radius: 20px;
+    transition: all 0.3s ease;
+    
+    &.el-button--primary {
+      background: linear-gradient(135deg, #00D9FF 0%, #4FD1C5 100%);
+      border: none;
+      color: #ffffff;
+      
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0, 217, 255, 0.4);
+      }
+    }
   }
 </style>

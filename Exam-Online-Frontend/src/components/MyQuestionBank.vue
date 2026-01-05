@@ -53,8 +53,7 @@
               icon="el-icon-wind-power"
               size="small"
               @click="showTrainDialog(scope.row.questionBank.bankId)"
-              >开始训练
-            </el-button>
+              >开始训练</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -131,7 +130,7 @@
           <div class="img-btn">
             <img src="../assets/imgs/single.png" />
             <div>
-              单选题({{ questionBankInfo[currentBankIndex].singleChoice }}题)
+              单选题({{ questionBankInfo[currentBankIndex].singleChoice }}道)
             </div>
           </div>
         </div>
@@ -148,7 +147,7 @@
           <div class="img-btn">
             <img src="../assets/imgs/multiple.png" />
             <div>
-              多选题({{ questionBankInfo[currentBankIndex].multipleChoice }}题)
+              多选题({{ questionBankInfo[currentBankIndex].multipleChoice }}道)
             </div>
           </div>
         </div>
@@ -164,7 +163,7 @@
         >
           <div class="img-btn">
             <img src="../assets/imgs/judge.png" />
-            <div>判断题({{ questionBankInfo[currentBankIndex].judge }}题)</div>
+            <div>判断题({{ questionBankInfo[currentBankIndex].judge }}道)</div>
           </div>
         </div>
       </el-card>
@@ -215,7 +214,7 @@ export default {
       trainVisible: false,
       //当前被点击训练的题库id
       currentBankId: 0,
-      //当前被点击训练的题库在当前页面中数据的索引下标值
+      //当前被点击训练的题库在当前页面中数据的索引下标
       currentBankIndex: 0
     };
   },
@@ -301,7 +300,7 @@ export default {
       this.queryInfo.pageSize = val;
       this.getBankInfo();
     },
-    //分页插件的页数
+    //分页插件的页码
     handleCurrentChange(val) {
       this.queryInfo.pageNo = val;
       this.getBankInfo();
@@ -317,7 +316,7 @@ export default {
     },
     //跳转练习页面
     toTrainPage(trainType) {
-      //trainType (1顺序,2随机,3单选,4多选,5判断)
+      //trainType (1顺序,2随机,3单�?4多�?5判断)
       let bankInfo = this.questionBankInfo[this.currentBankIndex];
       if (
         bankInfo.multipleChoice > 0 ||
@@ -338,6 +337,88 @@ export default {
 .el-container {
   width: 100%;
   height: 100%;
+  background: linear-gradient(135deg, #F0FDFF 0%, #E0F9FF 100%);
+  padding: 20px;
+
+  :deep(.el-table) {
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(0, 217, 255, 0.15);
+    background: #ffffff;
+    
+    thead th {
+      background: linear-gradient(135deg, #00D9FF 0%, #4FD1C5 100%);
+      color: #ffffff;
+      font-weight: bold;
+    }
+  }
+
+  :deep(.el-input__inner) {
+    border-radius: 20px;
+    border: 2px solid #00D9FF;
+    transition: all 0.3s ease;
+    
+    &:focus {
+      border-color: #4FD1C5;
+      box-shadow: 0 0 0 3px rgba(0, 217, 255, 0.1);
+    }
+  }
+
+  :deep(.el-button) {
+    border-radius: 20px;
+    transition: all 0.3s ease;
+    
+    &.el-button--primary {
+      background: linear-gradient(135deg, #00D9FF 0%, #4FD1C5 100%);
+      border: none;
+      
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0, 217, 255, 0.4);
+      }
+    }
+  }
+
+  :deep(.el-dialog) {
+    border-radius: 24px;
+    overflow: hidden;
+    
+    .el-dialog__header {
+      background: linear-gradient(135deg, #00D9FF 0%, #4FD1C5 100%);
+      padding: 20px;
+      
+      .el-dialog__title {
+        color: #ffffff;
+        font-weight: bold;
+      }
+    }
+    
+    .el-card {
+      border-radius: 16px;
+      border: none;
+      box-shadow: 0 4px 12px rgba(0, 217, 255, 0.1);
+      background: #ffffff;
+    }
+  }
+
+  :deep(.el-pagination) {
+    .el-pager li {
+      border-radius: 8px;
+      transition: all 0.3s ease;
+      
+      &.active {
+        background: linear-gradient(135deg, #00D9FF 0%, #4FD1C5 100%);
+      }
+      
+      &:hover {
+        color: #00D9FF;
+      }
+    }
+    
+    button {
+      border-radius: 8px;
+    }
+  }
 }
 
 .el-input {
@@ -359,37 +440,36 @@ export default {
   color: #606266;
 }
 
-:deep(.el-table thead) {
-  color: rgb(85, 85, 85) !important;
-}
-
-/*表格的头部样式*/
-:deep(.has-gutter tr th) {
-  background: rgb(242, 243, 244);
-  color: rgb(85, 85, 85);
-  font-weight: bold;
-  line-height: 32px;
-}
-
 .el-table {
-  box-shadow: 0 0 1px 1px gainsboro;
+  box-shadow: 0 8px 24px rgba(0, 217, 255, 0.15);
+  height: calc(100% - 60px) !important;
+  overflow: auto !important;
+  border-radius: 16px;
 }
 
 h1 {
   font-size: 24px;
   font-weight: bold;
+  color: #00D9FF;
+  margin: 20px 0;
 }
 
 .btn-item {
-  border: 1px solid rgb(239, 239, 239);
+  border: 2px solid #F0FDFF;
+  border-radius: 16px;
   margin-bottom: 10px;
   margin-left: 35px;
   padding: 8px;
   cursor: pointer;
-}
+  transition: all 0.3s ease;
+  background: #ffffff;
 
-.btn-item:hover {
-  background-color: rgb(239, 239, 239);
+  &:hover {
+    background: linear-gradient(135deg, #F0FDFF 0%, #ffffff 100%);
+    border-color: #00D9FF;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 217, 255, 0.2);
+  }
 }
 
 .btn-item:first-child {
@@ -413,16 +493,14 @@ h1 {
     margin-left: 10px;
     font-size: 18px;
     font-weight: bold;
+    color: #00D9FF;
   }
 }
-.el-table {
-  box-shadow: 0 0 1px 1px gainsboro;
-  height: calc(100% - 60px) !important;
-  overflow: auto !important;
-}
+
 .el-form-item {
   margin-bottom: 10px;
 }
+
 .el-form {
   :deep(.el-input) {
     width: 100% !important;

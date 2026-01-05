@@ -73,7 +73,7 @@
             {{
               scope.row.startTime !== "null" && scope.row.endTime !== "null"
                 ? scope.row.startTime + " ~" + scope.row.endTime
-                : "不限时"
+                : "不限制"
             }}
           </template>
         </el-table-column>
@@ -106,7 +106,7 @@
               :icon="checkExam(scope.row) ? 'el-icon-edit' : 'el-icon-close'"
               :type="checkExam(scope.row) ? 'primary' : 'info'"
             >
-              {{ checkExam(scope.row) ? "考试" : "暂未开放" }}
+              {{ checkExam(scope.row) ? "考试" : "暂未开始" }}
             </el-button>
           </template>
         </el-table-column>
@@ -132,13 +132,6 @@
       center
       width="60%"
     >
-      <el-alert
-        show-icon
-        title="点击`开始考试`按钮后将会进入考试页面，考试过程中会开启摄像头对用户行为、用户视频进行截图采样，请诚信考试谢谢！"
-        type="warning"
-      >
-      </el-alert>
-
       <el-card style="margin-top: 25px">
         <span>本次考试名称：</span>{{ currentSelectedExam.examName }}
         <br />
@@ -156,7 +149,7 @@
 
       <span slot="footer" class="dialog-footer">
         <el-button round type="warning" @click="startExamDialog = false"
-          >返 回</el-button
+          >取消</el-button
         >
         <el-button
           round
@@ -314,7 +307,7 @@ export default {
       this.queryInfo.pageSize = val;
       this.getExamInfo();
     },
-    //分页插件的页数
+    //分页插件的页码
     handleCurrentChange(val) {
       this.queryInfo.pageNo = val;
       this.getExamInfo();
@@ -430,22 +423,119 @@ export default {
 .el-container {
   width: 100%;
   height: 100%;
+  background: linear-gradient(135deg, #F0FDFF 0%, #E0F9FF 100%);
+  padding: 20px;
 
-  :deep(.el-table thead) {
-    color: rgb(85, 85, 85) !important;
+  :deep(.el-table) {
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(0, 217, 255, 0.15);
+    
+    thead {
+      color: rgb(85, 85, 85) !important;
+    }
   }
 
   :deep(.has-gutter tr th) {
-    background: rgb(242, 243, 244);
-    color: rgb(85, 85, 85);
+    background: linear-gradient(135deg, #00D9FF 0%, #4FD1C5 100%);
+    color: #ffffff;
     font-weight: bold;
     line-height: 32px;
   }
+
+  :deep(.el-alert) {
+    border-radius: 16px;
+    background: linear-gradient(135deg, #F0FDFF 0%, #ffffff 100%);
+    border: 2px solid #00D9FF;
+    box-shadow: 0 4px 12px rgba(0, 217, 255, 0.1);
+  }
+
+  :deep(.el-select) {
+    .el-input__inner {
+      border-radius: 20px;
+      border: 2px solid #00D9FF;
+      transition: all 0.3s ease;
+      
+      &:focus {
+        border-color: #4FD1C5;
+        box-shadow: 0 0 0 3px rgba(0, 217, 255, 0.1);
+      }
+    }
+  }
+
+  :deep(.el-input__inner) {
+    border-radius: 20px;
+    border: 2px solid #00D9FF;
+    transition: all 0.3s ease;
+    
+    &:focus {
+      border-color: #4FD1C5;
+      box-shadow: 0 0 0 3px rgba(0, 217, 255, 0.1);
+    }
+  }
+
+  :deep(.el-button) {
+    border-radius: 20px;
+    transition: all 0.3s ease;
+    
+    &.el-button--primary {
+      background: linear-gradient(135deg, #00D9FF 0%, #4FD1C5 100%);
+      border: none;
+      
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0, 217, 255, 0.4);
+      }
+    }
+  }
+
+  :deep(.el-dialog) {
+    border-radius: 24px;
+    overflow: hidden;
+    
+    .el-dialog__header {
+      background: linear-gradient(135deg, #00D9FF 0%, #4FD1C5 100%);
+      padding: 20px;
+      
+      .el-dialog__title {
+        color: #ffffff;
+        font-weight: bold;
+      }
+    }
+    
+    .el-card {
+      border-radius: 16px;
+      border: none;
+      box-shadow: 0 4px 12px rgba(0, 217, 255, 0.1);
+    }
+  }
+
+  :deep(.el-pagination) {
+    .el-pager li {
+      border-radius: 8px;
+      transition: all 0.3s ease;
+      
+      &.active {
+        background: linear-gradient(135deg, #00D9FF 0%, #4FD1C5 100%);
+      }
+      
+      &:hover {
+        color: #00D9FF;
+      }
+    }
+    
+    button {
+      border-radius: 8px;
+    }
+  }
 }
+
 .el-header {
-  height: 40px !important;
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  justify-content: flex-start;
+  background: transparent;
+  padding-bottom: 20px;
 }
 
 @keyframes leftMoveIn {
@@ -459,9 +549,11 @@ export default {
   }
 }
 
-/*表格的头部样式*/
 .el-table {
-  box-shadow: 0 0 1px 1px gainsboro;
+  box-shadow: 0 8px 24px rgba(0, 217, 255, 0.15);
+  height: calc(100% - 60px) !important;
+  overflow: auto !important;
+  border-radius: 16px;
 }
 
 span {
@@ -470,14 +562,11 @@ span {
   font-size: 16px;
   padding: 10px !important;
 }
-.el-table {
-  box-shadow: 0 0 1px 1px gainsboro;
-  height: calc(100% - 60px) !important;
-  overflow: auto !important;
-}
+
 .el-form-item {
   margin-bottom: 10px;
 }
+
 .el-form {
   :deep(.el-input) {
     width: 100% !important;

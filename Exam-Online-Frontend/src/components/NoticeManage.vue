@@ -234,9 +234,9 @@ export default {
         ]
       },
       // 发布公告的富文本编辑器
-      publishEditor: new E("#publishEditor"),
+      publishEditor: null,
       // 更新公告的富文本编辑器
-      updateEditor: new E("#updateEditor"),
+      updateEditor: null,
       // 更新公告的对话框是否展示
       updateTableVisible: false,
       // 更新的表单
@@ -339,9 +339,13 @@ export default {
     // 显示发布新闻对话框
     showPublishNoticeDialog() {
       this.publishTableVisible = true;
-      window.setTimeout(() => {
+      this.$nextTick(() => {
+        // 初始化编辑器实例（如果还没有创建）
+        if (!this.publishEditor) {
+          this.publishEditor = new E("#publishEditor");
+        }
         this.createPublishWangEditor();
-      }, 200);
+      });
     },
     // 发布公告的表单信息重置
     resetPublishForm() {
@@ -407,9 +411,13 @@ export default {
       this.currentUpdateNoticeStatus = row.status + "";
       this.updateTableVisible = true;
       // 创建富文本编辑器
-      window.setTimeout(() => {
+      this.$nextTick(() => {
+        // 初始化编辑器实例（如果还没有创建）
+        if (!this.updateEditor) {
+          this.updateEditor = new E("#updateEditor");
+        }
         this.createUpdateWangEditor();
-      }, 200);
+      });
     },
     // 更新公告
     updateNotice() {
