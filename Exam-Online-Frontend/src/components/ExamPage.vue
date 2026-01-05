@@ -29,38 +29,71 @@
                 <span v-else>【简答题】</span>
                 <span>{{ questionInfo[curIndex].questionContent}}:</span>
               </div>
+              
               <!--题目中的配图-->
-              <img v-for="url in questionInfo[curIndex].images" :src="url" title="点击查看大图" alt="题目图片"
-                   style="width: 100px;height: 100px;cursor: pointer" @click="showBigImg(url)">
+              <div v-if="questionInfo[curIndex].images && questionInfo[curIndex].images.length > 0" style="margin-top: 15px;">
+                <div v-for="(url, imgIndex) in questionInfo[curIndex].images" 
+                     :key="imgIndex"
+                     style="display: inline-block; margin-right: 10px; position: relative;">
+                  <img :src="url" 
+                       :data-key="curIndex + '_' + imgIndex"
+                       title="点击查看大图" 
+                       alt="题目图片"
+                       style="width: 100px;height: 100px;cursor: pointer;object-fit: cover;border: 2px solid #F0FDFF;border-radius: 8px;" 
+                       @click="showBigImg(url)"
+                       @error="handleImageError">
+                  <div v-if="imageLoadError[curIndex + '_' + imgIndex]" 
+                       style="width: 100px;height: 100px;border: 2px solid #ff6b6b;border-radius: 8px;display: flex;flex-direction: column;align-items: center;justify-content: center;background: #ffe0e0;font-size: 12px;text-align: center;padding: 5px;position: absolute;top: 0;left: 0;">
+                    <div>图片加载失败</div>
+                    <a :href="url" target="_blank" style="color: #00D9FF;text-decoration: underline;font-size: 10px;margin-top: 5px;">在新窗口打开</a>
+                  </div>
+                </div>
+              </div>
 
-              <!--单选 和 判断 的答案列表-->
+              <!--单选、判断 的答案列表-->
               <div style="margin-top: 25px"
                    v-show="questionInfo[curIndex].questionType === 1 || questionInfo[curIndex].questionType === 3">
                 <div class="el-radio-group">
-                  <label v-for="(item,index) in questionInfo[curIndex].answer"
-                         @click="checkSingleAnswer(index)"
-                         :class="index === userAnswer[curIndex] ? 'active' : ''">
-                    <span>{{ optionName[index] + '、' + item.answer}}</span>
-                    <img style="position: absolute;left:100%;top:50%;transform: translateY(-50%);
-                  width: 40px;height: 40px;float: right;cursor: pointer;" title="点击查看大图"
-                         v-if="item.images !== null"
-                         v-for="i2 in item.images" :src="i2" alt="" @mouseover="showBigImg(i2)">
-                  </label>
+                  <div v-for="(item,index) in questionInfo[curIndex].answer"
+                       :key="index"
+                       class="answer-option"
+                       @click="checkSingleAnswer(index)"
+                       :class="{'active': index === userAnswer[curIndex]}">
+                    <span>{{ optionName[index] + '.' + item.answer}}</span>
+                    <div v-if="item.images !== null && item.images.length > 0" class="answer-images">
+                      <img v-for="(i2, i2Index) in item.images" 
+                           :key="i2Index"
+                           :src="i2" 
+                           alt="" 
+                           title="点击查看大图"
+                           @click.stop="showBigImg(i2)"
+                           @error="handleImageError"
+                           style="width: 40px;height: 40px;cursor: pointer;margin-left: 10px;object-fit: cover;border: 2px solid #F0FDFF;border-radius: 4px;">
+                    </div>
+                  </div>
                 </div>
               </div>
 
               <!--多选的答案列表-->
               <div style="margin-top: 25px" v-show="questionInfo[curIndex].questionType === 2">
                 <div class="el-radio-group">
-                  <label v-for="(item,index) in questionInfo[curIndex].answer"
-                         @click="selectedMultipleAnswer(index)"
-                         :class="(userAnswer[curIndex]+'').indexOf(index+'') !== -1? 'active' : ''">
-                    <span>{{ optionName[index] + '、' + item.answer}}</span>
-                    <img style="position: absolute;left:100%;top:50%;transform: translateY(-50%);
-                  width: 40px;height: 40px;float: right;cursor: pointer;" title="点击查看大图"
-                         v-if="item.images !== null"
-                         v-for="i2 in item.images" :src="i2" alt="" @mouseover="showBigImg(i2)">
-                  </label>
+                  <div v-for="(item,index) in questionInfo[curIndex].answer"
+                       :key="index"
+                       class="answer-option"
+                       @click="selectedMultipleAnswer(index)"
+                       :class="{'active': (userAnswer[curIndex]+'').indexOf(index+'') !== -1}">
+                    <span>{{ optionName[index] + '.' + item.answer}}</span>
+                    <div v-if="item.images !== null && item.images.length > 0" class="answer-images">
+                      <img v-for="(i2, i2Index) in item.images" 
+                           :key="i2Index"
+                           :src="i2" 
+                           alt="" 
+                           title="点击查看大图"
+                           @click.stop="showBigImg(i2)"
+                           @error="handleImageError"
+                           style="width: 40px;height: 40px;cursor: pointer;margin-left: 10px;object-fit: cover;border: 2px solid #F0FDFF;border-radius: 4px;">
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -78,8 +111,7 @@
               <div style="margin-top: 25px">
                 <el-button round type="primary" icon="el-icon-back" :disabled="curIndex<1" @click="curIndex--">上一题</el-button>
                 <el-button round type="primary" icon="el-icon-right" :disabled="curIndex>=questionInfo.length-1"
-                           @click="curIndex++">下一题
-                </el-button>
+                           @click="curIndex++">下一题</el-button>
               </div>
 
             </el-card>
@@ -182,7 +214,7 @@
         userAnswer: [],
         //页面数据加载
         loading: {},
-        //页面绘制是否开始
+        //页面绘制是否开启
         show: false,
         //答案的选项名abcd数据
         optionName: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'],
@@ -200,6 +232,8 @@
         faceVerifyCount: 0,
         faceVerifyFailCount: 0,
         maxFaceVerifyFail: 3,
+        //图片加载错误标记
+        imageLoadError: {}
       }
     },
     created () {
@@ -208,7 +242,7 @@
       this.loading = this.$Loading.service({
         body: true,
         lock: true,
-        text: '数据拼命加载中,(*╹▽╹*)',
+        text: '数据拼命加载中(*╹▽╹*)',
         spinner: 'el-icon-loading',
       })
       //开启摄像头
@@ -234,35 +268,35 @@
       }
     },
     mounted () {
-      //关闭浏览器窗口的时候移除 localstorage的时长
-      var userAgent = navigator.userAgent //取得浏览器的userAgent字符串
-      var isOpera = userAgent.indexOf('Opera') > -1 //判断是否Opera浏览器
-      var isIE = userAgent.indexOf('compatible') > -1 && userAgent.indexOf('MSIE') > -1 && !isOpera //判断是否IE浏览器
-      var isIE11 = userAgent.indexOf('rv:11.0') > -1 //判断是否是IE11浏览器
-      var isEdge = userAgent.indexOf('Edge') > -1 && !isIE //判断是否IE的Edge浏览器
+      //关闭浏览器窗口的时候移除localstorage的时间
+      var userAgent = navigator.userAgent; //取得浏览器的userAgent字符串
+      var isOpera = userAgent.indexOf('Opera') > -1; //判断是否Opera浏览器
+      var isIE = userAgent.indexOf('compatible') > -1 && userAgent.indexOf('MSIE') > -1 && !isOpera; //判断是否IE浏览器
+      var isIE11 = userAgent.indexOf('rv:11.0') > -1; //判断是否是IE11浏览器
+      var isEdge = userAgent.indexOf('Edge') > -1 && !isIE; //判断是否IE的Edge浏览器
       if (!isIE && !isEdge && !isIE11) {//兼容chrome和firefox
-        var _beforeUnload_time = 0, _gap_time = 0
-        var is_fireFox = navigator.userAgent.indexOf('Firefox') > -1//是否是火狐浏览器
+        var _beforeUnload_time = 0, _gap_time = 0;
+        var is_fireFox = navigator.userAgent.indexOf('Firefox') > -1;//是否是火狐浏览器
         window.onunload = function () {
           _gap_time = new Date().getTime() - _beforeUnload_time
           if (_gap_time <= 5) {
             localStorage.removeItem('examDuration' + this.examInfo.examId)
           } else {//谷歌浏览器刷新
           }
-        }
+        };
         window.onbeforeunload = function () {
           _beforeUnload_time = new Date().getTime()
           if (is_fireFox) {//火狐关闭执行
 
           } else {//火狐浏览器刷新
           }
-        }
+        };
       }
     },
-    beforeDestroy() {
+    beforeDestroy () {
       // 清除人脸识别定时器
       if (this.faceVerifyTimer) {
-        clearInterval(this.faceVerifyTimer)
+        clearInterval(this.faceVerifyTimer);
       }
     },
     methods: {
@@ -289,7 +323,7 @@
             if (index === 0) this.questionInfo = []
             if (resp.data.code === 200) {
               this.questionInfo.push(resp.data.data)
-              //重置问题的顺序 单选 多选 判断 简答
+              //重置问题的顺序：单选 多选 判断 简答
               this.questionInfo = this.questionInfo.sort(function (a, b) {
                 return a.questionType - b.questionType
               })
@@ -304,9 +338,26 @@
         this.bigImgUrl = url
         this.bigImgDialog = true
       },
+      //图片加载失败处理
+      handleImageError(e) {
+        const url = e.target.src
+        console.error('图片加载失败:', url)
+        // 标记图片加载失败
+        const imgKey = e.target.getAttribute('data-key')
+        if (imgKey) {
+          this.$set(this.imageLoadError, imgKey, true)
+        }
+        e.target.style.display = 'none'
+      },
       //检验单选题的用户选择的答案
       checkSingleAnswer (index) {
+        console.log('选择答案:', index, '当前题目:', this.curIndex)
+        console.log('当前题目信息:', this.questionInfo[this.curIndex])
+        console.log('题目images字段:', this.questionInfo[this.curIndex].images)
+        console.log('images类型:', typeof this.questionInfo[this.curIndex].images)
         this.$set(this.userAnswer, this.curIndex, index)
+        console.log('userAnswer:', this.userAnswer)
+        this.$forceUpdate()
       },
       //多选题用户的答案选中
       selectedMultipleAnswer (index) {
@@ -362,44 +413,63 @@
       //拍照
       takePhoto () {
         return new Promise((resolve, reject) => {
-          if (this.cameraOn) {//摄像头是否开启 开启了才执行上传信用图片
-            //获得Canvas对象
-            let video = document.getElementById('video')
-            let canvas = document.getElementById('canvas')
-            let ctx = canvas.getContext('2d')
-            ctx.drawImage(video, 0, 0, 200, 200)
-            // toDataURL  ---  可传入'image/png'---默认, 'image/jpeg'
-            let img = document.getElementById('canvas').toDataURL()
-
-            //构造post的form表单
-            let formData = new FormData()
-            //convertBase64UrlToBlob函数是将base64编码转换为Blob
-            formData.append('file', this.base64ToFile(img, 'examTakePhoto.png'))
-            formData.append('fileType', 'examUserImg')
-            //上传阿里云OSS
-            this.$http.post(this.API.uploadFile, formData).then((resp) => {
-              if (resp.data.code === 200) {
-                this.takePhotoUrl.push(resp.data.data)
+          try {
+            if (this.cameraOn) {//摄像头是否开启 开启了才执行上传信用图片
+              //获得Canvas对象
+              let video = document.getElementById('video')
+              let canvas = document.getElementById('canvas')
+              
+              if (!video || !canvas) {
+                console.warn('视频或画布元素不存在')
                 resolve()
-              } else {
-                reject(new Error('上传失败'))
+                return
               }
-            }).catch(err => {
-              reject(err)
-            })
-          } else {
-            resolve()
+              
+              let ctx = canvas.getContext('2d')
+              ctx.drawImage(video, 0, 0, 200, 200)
+              // toDataURL  ---  可传入'image/png'---默认, 'image/jpeg'
+              let img = canvas.toDataURL()
+
+              //构造post的form表单
+              let formData = new FormData()
+              //convertBase64UrlToBlob函数是将base64编码转换为Blob
+              formData.append('file', this.base64ToFile(img, 'examTakePhoto.png'))
+              formData.append('fileType', 'examUserImg')
+              //上传阿里云OSS
+              this.$http.post(this.API.uploadFile, formData).then((resp) => {
+                if (resp.data.code === 200) {
+                  this.takePhotoUrl.push(resp.data.data)
+                  resolve()
+                } else {
+                  reject(new Error('上传失败'))
+                }
+              }).catch(err => {
+                reject(err)
+              })
+            } else {
+              resolve()
+            }
+          } catch (error) {
+            console.error('拍照失败:', error)
+            resolve() // 即使失败也继续执行
           }
         })
       },
       //关闭摄像头
       closeCamera () {
-        let stream = document.getElementById('video').srcObject
-        let tracks = stream.getTracks()
-        tracks.forEach(function (track) {
-          track.stop()
-        })
-        document.getElementById('video').srcObject = null
+        try {
+          const video = document.getElementById('video')
+          if (video && video.srcObject) {
+            let stream = video.srcObject
+            let tracks = stream.getTracks()
+            tracks.forEach(function (track) {
+              track.stop()
+            })
+            video.srcObject = null
+          }
+        } catch (error) {
+          console.error('关闭摄像头失败:', error)
+        }
       },
       //将摄像头截图的base64串转化为file提交后台
       base64ToFile (urlData, fileName) {
@@ -436,6 +506,12 @@
           // 获取当前视频帧
           let video = document.getElementById('video')
           let canvas = document.getElementById('canvas')
+          
+          if (!video || !canvas) {
+            console.warn('视频或画布元素不存在，跳过人脸验证')
+            return
+          }
+          
           let ctx = canvas.getContext('2d')
           ctx.drawImage(video, 0, 0, 200, 200)
           let imageBase64 = canvas.toDataURL('image/jpeg', 0.8)
@@ -528,7 +604,7 @@
         if (this.cameraOn) await this.takePhoto()//结束的时候拍照上传一张
         // 正则
         var reg = new RegExp('-', 'g')
-        // 去掉用户输入的非法分割符号(-),保证后端接受数据处理不报错
+        // 去掉用户输入的非法分割符（-),保证后端接受数据处理不报错
         this.userAnswer.forEach((item, index) => {
           if (this.questionInfo[index].questionType === 4) {//简答题答案处理
             this.userAnswer[index] = item.replace(reg, ' ')
@@ -560,12 +636,12 @@
             data.creditImgUrl = this.takePhotoUrl.join(',')
             this.questionInfo.forEach((item, index) => {
               data.questionIds.push(item.questionId)
-              //当前数据不完整,用户回答不完整(我们自动补充空答案,防止业务出错)
+              //当前数据不完整 用户回答不完整 我们自动补充空答案(防止业务出错)
               if (index > (this.userAnswer.length - 1)) {
                 data.userAnswers += '- '
               }
             })
-            //如果所有题目全部未答
+            //如果所有题目全部未�?
             if (this.userAnswer.length === 0) {
               this.questionInfo.forEach(item => {
                 data.userAnswers += ' -'
@@ -599,9 +675,9 @@
               duration: 2000
             })
           })
-        } else {//当前题目做完了
+        } else {//当前题目做完�?
           if (this.cameraOn) {
-            //结束的时候拍照上传一张
+            //结束的时候拍照上传一�?
             this.takePhoto()
             this.closeCamera()
           }
@@ -629,10 +705,10 @@
       }
     },
     watch: {
-      //监控考试的剩余时间
+      //监控考试的剩余时�?
       duration (newVal) {
         localStorage.setItem('examDuration' + this.examInfo.examId, newVal)
-        //摄像头数据
+        //摄像头数�?
         let constraints = {
           video: {
             width: 200,
@@ -645,13 +721,13 @@
         promise.catch((back) => {
           this.cameraOn = false
         })
-        if (!this.cameraOn) {//如果摄像头未开启,就再次调用开启
+        if (!this.cameraOn) {//如果摄像头未开�?就再次调用开�?
           this.getCamera()
         }
-        //考试时间结束了提交试卷
+        //考试时间结束了提交试�?
         if (newVal < 1) {
           if (this.cameraOn) {
-            //结束的时候拍照上传一张
+            //结束的时候拍照上传一�?
             this.takePhoto()
             this.closeCamera()
           }
@@ -660,12 +736,12 @@
           data.userAnswers = this.userAnswer.join('-')
           this.questionInfo.forEach((item, index) => {
             data.questionIds.push(item.questionId)
-            //当前数据不完整,用户回答不完整(我们自动补充空答案,防止业务出错)
+            //当前数据不完�?用户回答不完�?我们自动补充空答�?防止业务出错)
             if (index > this.userAnswer.length) {
               data.userAnswers += ' -'
             }
           })
-          //如果所有题目全部未答
+          //如果所有题目全部未�?
           if (data.userAnswers === '') {
             this.questionInfo.forEach(item => {
               data.userAnswers += ' -'
@@ -680,7 +756,7 @@
             if (resp.data.code === 200) {
               this.$notify({
                 title: '提示',
-                message: '考试时间结束,已为您自动提交 *^▽^*',
+                message: '考试时间结束,已为您自动提�?*^▽^*',
                 type: 'success',
                 duration: 2000
               })
@@ -701,71 +777,100 @@
   .el-container {
     width: 100%;
     height: 100%;
+    background: linear-gradient(135deg, #F0FDFF 0%, #E0F9FF 100%);
+    padding: 20px;
   }
 
   .startExam {
-    color: #160f58;
-    border-bottom: 4px solid #ffd550;
+    color: #00D9FF;
+    border-bottom: 4px solid #4FD1C5;
     font-size: 18px;
     font-weight: 700;
-    padding-bottom: 10px
+    padding-bottom: 10px;
   }
 
   .examTitle {
     font-size: 18px;
-    color: #cbcacf;
+    color: #00D9FF;
     margin-left: 20px;
     font-weight: 700;
   }
 
-  .el-radio-group label {
+  .el-radio-group .answer-option {
     display: block;
     width: 400px;
-    padding: 48px 20px 10px 20px;
-    border-radius: 4px;
-    border: 1px solid #dcdfe6;
+    padding: 15px 20px;
+    border-radius: 16px;
+    border: 2px solid #F0FDFF;
     margin-bottom: 10px;
     cursor: pointer;
     position: relative;
+    transition: all 0.3s ease;
+    background: #ffffff;
+    min-height: 60px;
+
+    &:hover {
+      border-color: #00D9FF;
+      box-shadow: 0 4px 12px rgba(0, 217, 255, 0.2);
+    }
+
+    &.active {
+      border: 2px solid #00D9FF !important;
+      background: rgba(0, 217, 255, 0.1) !important;
+      box-shadow: 0 4px 12px rgba(0, 217, 255, 0.3);
+    }
 
     span {
-      position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
       font-size: 16px;
+      line-height: 1.5;
+      display: block;
+      word-wrap: break-word;
     }
-  }
-
-  .el-radio-group label:hover {
-    background-color: rgb(245, 247, 250);
-  }
-
-  /*当前选中的答案*/
-  .active {
-    border: 1px solid #1f90ff !important;
-    opacity: .5;
+    
+    .answer-images {
+      margin-top: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
   }
 
   /*做过的题目的高亮颜色*/
   .done {
-    background-color: rgb(87, 148, 247);
+    background: linear-gradient(135deg, #00D9FF 0%, #4FD1C5 100%);
     color: #ffffff;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 217, 255, 0.3);
+    }
   }
 
-  /*未做题目的高亮颜色*/
+  /*未做题目的高亮颜�?/
   .noAnswer {
-    background-color: rgb(238, 238, 238);
+    background-color: #ffffff;
+    border: 2px solid #F0FDFF;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    
+    &:hover {
+      border-color: #00D9FF;
+    }
   }
 
   /*当前在做的题目高亮的颜色*/
   .orange {
-    background-color: rgb(255, 213, 80);
+    background: linear-gradient(135deg, #ffd54f 0%, #ffb300 100%);
     color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(255, 179, 0, 0.3);
   }
 
   .num {
     display: inline-block;
-    background: #409EFF;
+    background: linear-gradient(135deg, #00D9FF 0%, #4FD1C5 100%);
     height: 37px;
     border-radius: 50%;
     width: 37px;
@@ -774,10 +879,57 @@
     font-size: 20px;
     text-align: center;
     margin-right: 15px;
+    box-shadow: 0 4px 12px rgba(0, 217, 255, 0.3);
   }
+
   .camera-video {
     position: absolute;
     top: 5%;
     right: 0;
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(0, 217, 255, 0.2);
+  }
+
+  :deep(.el-card) {
+    border-radius: 16px;
+    border: none;
+    box-shadow: 0 8px 24px rgba(0, 217, 255, 0.15);
+    background: #ffffff;
+  }
+
+  :deep(.el-button) {
+    border-radius: 20px;
+    transition: all 0.3s ease;
+    
+    &.el-button--primary {
+      background: linear-gradient(135deg, #00D9FF 0%, #4FD1C5 100%);
+      border: none;
+      
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0, 217, 255, 0.4);
+      }
+    }
+    
+    &.el-button--warning {
+      background: linear-gradient(135deg, #ffd54f 0%, #ffb300 100%);
+      border: none;
+      
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(255, 179, 0, 0.4);
+      }
+    }
+  }
+
+  :deep(.el-textarea__inner) {
+    border-radius: 16px;
+    border: 2px solid #F0FDFF;
+    transition: all 0.3s ease;
+    
+    &:focus {
+      border-color: #00D9FF;
+      box-shadow: 0 0 0 3px rgba(0, 217, 255, 0.1);
+    }
   }
 </style>

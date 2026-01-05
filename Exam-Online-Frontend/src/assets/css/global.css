@@ -3,35 +3,379 @@ html, body {
     padding: 0;
     height: 100%;
     width: 100%;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB',
+        'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background: linear-gradient(135deg, #F7FAFC 0%, #EDF2F7 100%);
+}
+
+* {
+    box-sizing: border-box;
 }
 
 p {
     padding: 0!important;
     margin: 0!important;
     font-size: 15px;
+    line-height: 1.6;
 }
 
-span {
-    /*font-weight: 200;*/
+/* 滚动条样式 */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(247, 250, 252, 0.3);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #38B2AC 0%, #319795 100%);
+    border-radius: 10px;
+    transition: all 0.3s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #319795 0%, #38B2AC 100%);
+}
+
+/* Element UI 表格优化 */
+.el-table {
+    color: #2D3748 !important;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(56, 178, 172, 0.1);
+    background: white;
 }
 
 .el-table td, .el-table th.is-leaf {
-    border-bottom: none;
+    border-bottom: 1px solid #E2E8F0;
 }
 
-.el-message-box {
-    /*width: 50% !important;*/
-}
-.el-table {
-    color: #000000 !important;
-}
-.has-gutter tr th  {
-    color: #000000 !important;
-    background: #ffffff !important;
-}
 .el-table thead {
-    color: #000000 !important;
+    color: #2D3748 !important;
 }
+
+.has-gutter tr th {
+    color: #ffffff !important;
+    background: linear-gradient(135deg, #38B2AC 0%, #319795 100%) !important;
+    font-weight: 600;
+}
+
 .el-table--border {
     border: none !important;
+}
+
+.el-table__row:hover {
+    background-color: #F0FDFF !important;
+}
+
+/* Element UI 按钮优化 */
+.el-button {
+    border-radius: 12px;
+    font-weight: 500;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.el-button--primary {
+    background: linear-gradient(135deg, #00D9FF 0%, #4FD1C5 100%);
+    border: none;
+    color: #ffffff;
+}
+
+.el-button--primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 217, 255, 0.35);
+    background: linear-gradient(135deg, #4FD1C5 0%, #00D9FF 100%);
+}
+
+.el-button--success {
+    background: linear-gradient(135deg, #48BB78 0%, #38A169 100%);
+    border: none;
+    color: #ffffff;
+}
+
+.el-button--success:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(72, 187, 120, 0.4);
+}
+
+.el-button--warning {
+    background: linear-gradient(135deg, #ED8936 0%, #DD6B20 100%);
+    border: none;
+    color: #ffffff;
+}
+
+.el-button--warning:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(237, 137, 54, 0.4);
+}
+
+.el-button--danger {
+    background: linear-gradient(135deg, #F56565 0%, #E53E3E 100%);
+    border: none;
+    color: #ffffff;
+}
+
+.el-button--danger:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(245, 101, 101, 0.4);
+}
+
+.el-button--info {
+    background: linear-gradient(135deg, #4299E1 0%, #3182CE 100%);
+    border: none;
+    color: #ffffff;
+}
+
+.el-button--info:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(66, 153, 225, 0.4);
+}
+
+/* Element UI 对话框优化 */
+.el-dialog {
+    border-radius: 20px;
+    box-shadow: 0 12px 48px rgba(56, 178, 172, 0.15);
+    overflow: hidden;
+}
+
+.el-dialog__header {
+    background: linear-gradient(135deg, #38B2AC 0%, #319795 100%);
+    padding: 24px 30px;
+    border-radius: 0;
+}
+
+.el-dialog__title {
+    color: white;
+    font-weight: 600;
+    font-size: 18px;
+}
+
+.el-dialog__headerbtn {
+    top: 24px !important;
+    right: 30px !important;
+    width: 36px !important;
+    height: 36px !important;
+    background: rgba(255, 255, 255, 0.2) !important;
+    border-radius: 50% !important;
+    transition: all 0.3s ease !important;
+}
+
+.el-dialog__headerbtn:hover {
+    background: rgba(255, 255, 255, 0.3) !important;
+}
+
+.el-dialog__headerbtn .el-dialog__close {
+    color: white;
+    font-size: 20px;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+
+.el-dialog__headerbtn:hover .el-dialog__close {
+    transform: rotate(90deg);
+}
+
+.el-dialog__body {
+    padding: 30px;
+    background: white;
+}
+
+.el-dialog__footer {
+    padding: 20px 30px;
+    background: white;
+    border-radius: 0;
+}
+
+/* Element UI 输入框优化 */
+.el-input__inner {
+    border-radius: 12px;
+    border: 2px solid #CBD5E0;
+    transition: all 0.3s ease;
+    background: white;
+    color: #2D3748;
+}
+
+.el-input__inner:focus {
+    border-color: #38B2AC;
+    box-shadow: 0 0 0 4px rgba(56, 178, 172, 0.1);
+}
+
+.el-textarea__inner {
+    border-radius: 12px;
+    border: 2px solid #CBD5E0;
+    transition: all 0.3s ease;
+    color: #2D3748;
+}
+
+.el-textarea__inner:focus {
+    border-color: #38B2AC;
+    box-shadow: 0 0 0 4px rgba(56, 178, 172, 0.1);
+}
+
+/* Element UI 卡片优化 */
+.el-card {
+    border-radius: 16px;
+    border: none;
+    box-shadow: 0 4px 20px rgba(56, 178, 172, 0.08);
+    transition: all 0.3s ease;
+    overflow: hidden;
+    background: white;
+}
+
+.el-card:hover {
+    box-shadow: 0 8px 30px rgba(56, 178, 172, 0.12);
+    transform: translateY(-2px);
+}
+
+.el-card__header {
+    border-radius: 0;
+}
+
+/* Element UI 消息框优化 */
+.el-message-box {
+    border-radius: 20px;
+    box-shadow: 0 12px 48px rgba(56, 178, 172, 0.15);
+    overflow: hidden;
+}
+
+.el-message-box__header {
+    background: linear-gradient(135deg, #38B2AC 0%, #319795 100%);
+    padding: 20px;
+}
+
+.el-message-box__title {
+    color: white;
+}
+
+/* Element UI 通知优化 */
+.el-notification {
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(56, 178, 172, 0.1);
+    overflow: hidden;
+}
+
+/* Element UI 分页优化 */
+.el-pagination {
+    .el-pager li {
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        color: #2D3748;
+    }
+    
+    .el-pager li.active {
+        background: linear-gradient(135deg, #38B2AC 0%, #319795 100%);
+        color: white;
+    }
+    
+    .btn-prev, .btn-next {
+        border-radius: 8px;
+        color: #2D3748;
+    }
+}
+
+/* Element UI 标签优化 */
+.el-tag {
+    border-radius: 8px;
+    border: none;
+    font-weight: 500;
+}
+
+.el-tag--primary {
+    background: linear-gradient(135deg, #38B2AC 0%, #319795 100%);
+    color: white;
+}
+
+/* Element UI 进度条优化 */
+.el-progress-bar__inner {
+    background: linear-gradient(135deg, #38B2AC 0%, #319795 100%);
+    border-radius: 10px;
+}
+
+/* Element UI 开关优化 */
+.el-switch.is-checked .el-switch__core {
+    background: linear-gradient(135deg, #38B2AC 0%, #319795 100%);
+    border: none;
+}
+
+/* Element UI 单选框优化 */
+.el-radio__input.is-checked .el-radio__inner {
+    background: linear-gradient(135deg, #38B2AC 0%, #319795 100%);
+    border-color: #38B2AC;
+}
+
+/* Element UI 复选框优化 */
+.el-checkbox__input.is-checked .el-checkbox__inner {
+    background: linear-gradient(135deg, #38B2AC 0%, #319795 100%);
+    border-color: #38B2AC;
+}
+
+/* 页面过渡动画 */
+.fade-enter-active, .fade-leave-active {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.fade-enter, .fade-leave-to {
+    opacity: 0;
+    transform: translateY(20px);
+}
+
+/* 加载动画 */
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.loading {
+    animation: spin 1s linear infinite;
+}
+
+/* 通用工具类 */
+.text-center {
+    text-align: center;
+}
+
+.text-right {
+    text-align: right;
+}
+
+.mt-10 {
+    margin-top: 10px;
+}
+
+.mt-20 {
+    margin-top: 20px;
+}
+
+.mb-10 {
+    margin-bottom: 10px;
+}
+
+.mb-20 {
+    margin-bottom: 20px;
+}
+
+.p-10 {
+    padding: 10px;
+}
+
+.p-20 {
+    padding: 20px;
+}
+
+/* 响应式工具类 */
+@media (max-width: 768px) {
+    .hide-mobile {
+        display: none !important;
+    }
+}
+
+@media (min-width: 769px) {
+    .show-mobile {
+        display: none !important;
+    }
 }

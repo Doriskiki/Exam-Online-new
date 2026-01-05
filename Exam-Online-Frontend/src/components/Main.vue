@@ -13,9 +13,9 @@
         :default-active="activeMenu"
         @select="handleSelect"
         router
-        background-color="#1e293b"
-        text-color="#ffffff"
-        active-text-color="#ffffff"
+        background-color="#ffffff"
+        text-color="#4A5568"
+        active-text-color="#38B2AC"
         :collapse="isCollapse"
       >
         <!-- 单独的导航 -->
@@ -385,16 +385,26 @@ export default {
     },
     //根据token后台判断用户权限,传递相对应的菜单
     getMenu() {
+      console.log('开始获取菜单...');
+      console.log('当前token:', localStorage.getItem('authorization'));
+      console.log('当前roleId:', localStorage.getItem('roleId'));
+      
       this.$http.get(this.API.getMenuInfo).then(resp => {
+        console.log('菜单API响应:', resp.data);
         if (resp.data.code === 200) {
+          console.log('菜单数据(原始):', resp.data.data);
           this.menuInfo = JSON.parse(resp.data.data);
+          console.log('菜单数据(解析后):', this.menuInfo);
           //根据链接创建不存在的tag标签并高亮
           this.createHighlightTag();
         } else {
           //后台认证失败,跳转登录页面
+          console.error('获取菜单失败:', resp.data.message);
           this.$message.error("权限认证失败");
           this.$router.push("/");
         }
+      }).catch(error => {
+        console.error('获取菜单请求失败:', error);
       });
     },
     //放大缩小侧边栏
@@ -654,24 +664,32 @@ export default {
 .el-container {
   width: 100%;
   height: 100%;
+  background: linear-gradient(135deg, #F7FAFC 0%, #EDF2F7 100%);
 
   .el-menu {
     height: calc(100% - 64px) !important;
     border-right: none !important;
+    background-color: #ffffff !important;
   }
 
   :deep(.el-submenu__title) {
-    height: 40px;
+    height: 48px;
     display: flex;
     align-items: center;
-    margin: 0 5px;
-    border-radius: 10px;
-  }
-
-  :deep(.el-submenu__title:hover) {
-    background-color: #409eff !important;
-    i {
-      color: #ffffff !important;
+    margin: 8px 12px;
+    border-radius: 14px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    color: #4A5568;
+    
+    &:hover {
+      background: linear-gradient(135deg, rgba(56, 178, 172, 0.1) 0%, rgba(49, 151, 149, 0.1) 100%) !important;
+      transform: translateX(5px);
+      box-shadow: 0 4px 15px rgba(56, 178, 172, 0.15);
+      
+      i {
+        color: #38B2AC !important;
+        transform: scale(1.1);
+      }
     }
   }
 
@@ -680,15 +698,53 @@ export default {
   }
 
   :deep(.el-card__body) {
-    padding: 10px;
+    padding: 15px 20px;
+    background: white;
+    border-radius: 0 0 16px 16px;
+  }
+
+  :deep(.el-card__header) {
+    padding: 15px 20px;
+    background: linear-gradient(135deg, #38B2AC 0%, #319795 100%);
+    border-bottom: none;
+    border-radius: 16px 16px 0 0;
+    
+    i, .el-breadcrumb {
+      color: white !important;
+    }
+    
+    :deep(.el-breadcrumb__inner) {
+      color: white !important;
+    }
+    
+    :deep(.el-breadcrumb__separator) {
+      color: rgba(255, 255, 255, 0.8) !important;
+    }
   }
 }
+
 .logo-img {
   width: 50px;
   height: 50px;
   border-radius: 50%;
   background: transparent;
+  transition: all 0.3s ease;
+  animation: pulse 2s ease-in-out infinite;
+  
+  &:hover {
+    transform: rotate(360deg) scale(1.1);
+  }
 }
+
+@keyframes pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(56, 178, 172, 0.6);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(56, 178, 172, 0);
+  }
+}
+
 .el-main,
 .el-header {
   padding: 0;
@@ -698,86 +754,167 @@ export default {
   width: 200px;
   min-height: 400px;
 }
+
 .el-menu--collapse {
   width: unset !important;
 }
+
 .el-menu-item.is-active {
-  background-color: #409eff !important;
-  color: #fff !important;
+  background: linear-gradient(135deg, rgba(56, 178, 172, 0.15) 0%, rgba(49, 151, 149, 0.15) 100%) !important;
+  color: #38B2AC !important;
+  box-shadow: 0 4px 15px rgba(56, 178, 172, 0.2);
+  transform: translateX(5px);
 }
+
 .el-tag.active {
-  background: #409eff !important;
+  background: linear-gradient(135deg, #38B2AC 0%, #319795 100%) !important;
   border: none !important;
   color: white;
+  box-shadow: 0 3px 10px rgba(56, 178, 172, 0.25);
+  transform: translateY(-2px);
 }
+
 .el-menu-item {
   font-size: 14px;
   display: flex;
   align-items: center;
-  //justify-content: center;
-  //font-weight: 800;
-  height: 40px;
-  margin: 5px 5px;
-  border-radius: 10px;
+  height: 48px;
+  margin: 8px 12px;
+  border-radius: 14px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  
   :deep(.el-tooltip) {
     display: flex !important;
     align-items: center !important;
   }
-}
-.el-menu-item:hover {
-  background-color: #409eff !important;
-  color: #ffffff !important;
-  fill: #ffffff;
-  i {
-    color: white !important;
+  
+  &:hover {
+    background: linear-gradient(135deg, rgba(56, 178, 172, 0.1) 0%, rgba(49, 151, 149, 0.1) 100%) !important;
+    color: #38B2AC !important;
+    fill: #38B2AC;
+    transform: translateX(5px);
+    box-shadow: 0 4px 15px rgba(56, 178, 172, 0.15);
+    
+    i {
+      color: white !important;
+      transform: scale(1.1);
+    }
   }
 }
 
-/*  右侧面板根据左侧的宽度变化而变化,侧边栏缩小,右侧面板变大,反之同理*/
 #aside {
-  transition: width 0.3s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 4px 0 15px rgba(0, 0, 0, 0.05);
+  background-color: #ffffff;
 }
 
 .el-breadcrumb {
   display: inline-block;
 }
 
-/*右上角的个人信息字体*/
 .el-dropdown-link {
   font-weight: 500;
-  font-size: 18px;
+  font-size: 16px;
+  color: white;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    opacity: 0.8;
+  }
 }
 
 .el-tag {
   border: none;
-  border-radius: 0;
-  box-shadow: 0 0 0.5px 0.5px gray;
-  color: black;
-  font-weight: 400;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(56, 178, 172, 0.12);
+  color: #2D3748;
+  font-weight: 500;
   text-align: center;
   margin-left: 10px;
   cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: white;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(56, 178, 172, 0.2);
+  }
 }
 
 .menu-header {
-  color: #ffffff;
+  color: #2D3748;
   display: flex;
   justify-content: center;
   align-items: center;
   padding: 0 !important;
   height: 64px;
   width: 100%;
-  background-color: rgb(38, 52, 69) !important;
-  transition: width 0.3s;
+  background: linear-gradient(135deg, #ffffff 0%, #F7FAFC 100%) !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  border-bottom: 1px solid #E2E8F0;
+  
+  span {
+    font-size: 18px;
+    font-weight: 600;
+    margin-left: 12px;
+    background: linear-gradient(135deg, #38B2AC 0%, #319795 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
   :deep(.el-tooltip) {
     padding: 0 !important;
   }
 }
 
-/*  tag的高亮*/
 .active {
-  background-color: rgb(66, 185, 131);
+  background: linear-gradient(135deg, #38B2AC 0%, #319795 100%) !important;
   color: white;
+  box-shadow: 0 3px 10px rgba(56, 178, 172, 0.25);
+}
+
+.box-card {
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(56, 178, 172, 0.12);
+  transition: all 0.3s ease;
+  overflow: hidden;
+  border: none;
+  
+  &:hover {
+    box-shadow: 0 6px 25px rgba(56, 178, 172, 0.18);
+  }
+}
+
+.image {
+  transition: all 0.3s ease;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  
+  &:hover {
+    transform: scale(1.1);
+    border-color: rgba(255, 255, 255, 0.6);
+  }
+}
+
+#full {
+  transition: all 0.3s ease;
+  color: white;
+  
+  &:hover {
+    transform: scale(1.2);
+    color: rgba(255, 255, 255, 0.8);
+  }
+}
+
+.el-icon-s-fold {
+  transition: all 0.3s ease;
+  color: white;
+  
+  &:hover {
+    transform: scale(1.2);
+    color: rgba(255, 255, 255, 0.8);
+  }
 }
 </style>
 

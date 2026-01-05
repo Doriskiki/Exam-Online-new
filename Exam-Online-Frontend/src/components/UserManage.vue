@@ -455,19 +455,132 @@ export default {
   display: flex;
   align-items: center;
 }
+
 .el-container {
   width: 100%;
   height: 100%;
+  background: linear-gradient(135deg, #F0FDFF 0%, #E0F9FF 100%);
+  padding: 20px;
 
-  :deep(.el-table thead) {
-    color: rgb(85, 85, 85) !important;
+  :deep(.el-table) {
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(0, 217, 255, 0.15);
+    background: #ffffff;
+    
+    thead th {
+      background: linear-gradient(135deg, #00D9FF 0%, #4FD1C5 100%);
+      color: #ffffff !important;
+      font-weight: bold;
+      line-height: 32px;
+    }
+    
+    .el-table__body tr:hover > td {
+      background-color: #F0FDFF !important;
+    }
   }
 
-  :deep(.has-gutter tr th) {
-    background: rgb(242, 243, 244);
-    color: rgb(85, 85, 85);
-    font-weight: bold;
-    line-height: 32px;
+  :deep(.el-input__inner) {
+    border-radius: 20px;
+    border: 2px solid #00D9FF;
+    transition: all 0.3s ease;
+    
+    &:focus {
+      border-color: #4FD1C5;
+      box-shadow: 0 0 0 3px rgba(0, 217, 255, 0.1);
+    }
+  }
+
+  :deep(.el-button) {
+    border-radius: 20px;
+    transition: all 0.3s ease;
+    
+    &.el-button--primary {
+      background: linear-gradient(135deg, #00D9FF 0%, #4FD1C5 100%);
+      border: none;
+      
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0, 217, 255, 0.4);
+      }
+    }
+    
+    &.el-button--warning {
+      background: linear-gradient(135deg, #FFB84D 0%, #FF9A4D 100%);
+      border: none;
+      
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(255, 184, 77, 0.4);
+      }
+    }
+  }
+
+  :deep(.el-select) {
+    .el-input__inner {
+      border-radius: 20px;
+    }
+  }
+
+  :deep(.el-tag) {
+    border-radius: 12px;
+    
+    &.el-tag--success {
+      background: linear-gradient(135deg, #4FD1C5 0%, #38B2AC 100%);
+      border: none;
+    }
+    
+    &.el-tag--danger {
+      background: linear-gradient(135deg, #FF6B6B 0%, #EE5A52 100%);
+      border: none;
+    }
+  }
+
+  :deep(.el-pagination) {
+    .el-pager li {
+      border-radius: 8px;
+      transition: all 0.3s ease;
+      
+      &.active {
+        background: linear-gradient(135deg, #00D9FF 0%, #4FD1C5 100%);
+      }
+      
+      &:hover {
+        color: #00D9FF;
+      }
+    }
+    
+    button {
+      border-radius: 8px;
+    }
+  }
+
+  :deep(.el-dialog) {
+    border-radius: 24px;
+    overflow: hidden;
+    
+    .el-dialog__header {
+      background: linear-gradient(135deg, #00D9FF 0%, #4FD1C5 100%);
+      padding: 20px;
+      
+      .el-dialog__title {
+        color: #ffffff;
+        font-weight: bold;
+      }
+      
+      .el-dialog__headerbtn .el-dialog__close {
+        color: #ffffff;
+        font-size: 20px;
+        
+        &:hover {
+          color: #E0F9FF;
+        }
+      }
+    }
+    
+    .el-dialog__body {
+      padding: 30px;
+    }
   }
 }
 
@@ -488,13 +601,16 @@ export default {
 
 /*表格的头部样式*/
 .el-table {
-  box-shadow: 0 0 1px 1px gainsboro;
+  box-shadow: 0 8px 24px rgba(0, 217, 255, 0.15);
   height: calc(100% - 60px) !important;
   overflow: auto !important;
+  border-radius: 16px;
 }
+
 .el-form-item {
   margin-bottom: 10px;
 }
+
 .el-form {
   :deep(.el-input) {
     width: 100% !important;
@@ -504,6 +620,13 @@ export default {
   }
   :deep(.el-form-item__label) {
     padding-bottom: 0 !important;
+    color: #00D9FF;
+    font-weight: 500;
   }
+}
+
+.role {
+  color: #606266;
+  font-weight: 500;
 }
 </style>

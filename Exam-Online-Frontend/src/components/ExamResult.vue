@@ -1,7 +1,7 @@
 <template>
   <el-container>
     <el-header height="150">
-      <el-button icon="el-icon-top-left" @click="$router.back()" type="text" size="medium">返回列表</el-button>
+      <el-button round type="primary" icon="el-icon-back" @click="$router.push('/examOnline')" size="medium">返回列表</el-button>
       <el-card style="height: 100px; text-align: center" v-if="examInfo && examRecord">
         <span class="examName">{{ examInfo.examName || '' }}</span>
         <span class="examTime" v-if="examRecord.examTime">({{ examRecord.examTime }})</span>
@@ -41,10 +41,15 @@
             <span style="color: red;font-style: italic;font-weight: 400;">&nbsp;({{ questionScore.get(String(item.questionId)) }}分)</span>
           </div>
           <!--题目中的配图-->
-          <template v-if="item.images && item.images.length">
-            <img v-for="url in item.images" :src="url" title="点击查看大图" alt="题目图片"
-                 style="width: 100px;height: 100px;cursor: pointer" @click="showBigImg(url)" />
-          </template>
+          <div v-if="item.images && item.images.length > 0" style="margin-top: 15px;">
+            <img v-for="(url, imgIndex) in item.images" 
+                 :key="imgIndex"
+                 :src="url" 
+                 title="点击查看大图" 
+                 alt="题目图片"
+                 style="width: 100px;height: 100px;cursor: pointer;margin-right: 10px;" 
+                 @click="showBigImg(url)" />
+          </div>
 
           <!--单选 和 判断 的答案列表-->
           <div style="margin-top: 25px"
@@ -235,10 +240,8 @@
   .el-container {
     width: 100%;
     height: 100%;
-  }
-
-  .el-container {
-    //animation: leftMoveIn .7s ease-in;
+    background: linear-gradient(135deg, #F0FDFF 0%, #E0F9FF 100%);
+    padding: 20px;
   }
 
   @keyframes leftMoveIn {
@@ -253,8 +256,7 @@
   }
 
   .examName {
-    color: #160f58;
-    //border-bottom: 4px solid #ffd550;
+    color: #00D9FF;
     font-size: 20px;
     font-weight: 800;
     padding-bottom: 10px
@@ -262,7 +264,7 @@
 
   .examTime {
     font-size: 16px;
-    //color: #cbcacf;
+    color: #4FD1C5;
     margin-left: 20px;
     font-weight: 700;
   }
@@ -270,25 +272,26 @@
   .el-radio-group label {
     display: block;
     width: 400px;
-    padding: 48px 20px 10px 20px;
-    border-radius: 4px;
-    border: 1px solid #dcdfe6;
+    padding: 15px 20px;
+    border-radius: 16px;
+    border: 2px solid #F0FDFF;
     margin-bottom: 10px;
     position: relative;
+    transition: all 0.3s ease;
+    background: #ffffff;
+    min-height: 60px;
 
     span {
-      position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
       font-size: 16px;
+      line-height: 1.5;
+      display: block;
+      word-wrap: break-word;
     }
   }
 
   .num {
     display: inline-block;
-    //background: url('../assets/imgs/examTitle.png') no-repeat 100% 100%;
-    //background-size: contain;
-    background: #1f90ff;
+    background: linear-gradient(135deg, #00D9FF 0%, #4FD1C5 100%);
     border-radius: 50%;
     height: 37px;
     width: 37px;
@@ -297,40 +300,86 @@
     font-size: 20px;
     text-align: center;
     margin-right: 15px;
+    box-shadow: 0 4px 12px rgba(0, 217, 255, 0.3);
   }
 
   /*选中的答案*/
   .active {
-    border: 1px solid #1f90ff !important;
-    opacity: .5;
+    border: 2px solid #ff6b6b !important;
+    background: rgba(255, 107, 107, 0.1);
+    box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
   }
 
-  /*  选中的答案且是正确答案*/
+  /*选中的答案且是正确答案*/
   .activeAndTrue {
-    border: 1px solid #1f90ff !important;
-    opacity: .5;
-    height: 15px;
-    width: 15px;
-    background-size: contain;
-    background: url('../assets/imgs/true.png') no-repeat 95%;
-    position: absolute;
-    top: 0;
-    left: 0;
+    border: 2px solid #4caf50 !important;
+    background: rgba(76, 175, 80, 0.1);
+    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+    
+    &::after {
+      content: '✓';
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      color: #4caf50;
+      font-size: 24px;
+      font-weight: bold;
+    }
   }
 
   .true {
-    height: 15px;
-    width: 15px;
-    background-size: contain;
-    background: url('../assets/imgs/true.png') no-repeat 95%;
-    position: absolute;
-    top: 0;
-    left: 0;
+    border: 2px solid #4caf50 !important;
+    background: rgba(76, 175, 80, 0.05);
+    
+    &::after {
+      content: '✓';
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      color: #4caf50;
+      font-size: 24px;
+      font-weight: bold;
+    }
   }
 
   .ques-analysis {
-    padding: 30px 40px;
-    background: #f6f6f8;
-    margin-bottom: 70px;
+    padding: 20px;
+    background: #ffffff;
+    border-radius: 16px;
+    border: 2px solid #F0FDFF;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 12px rgba(0, 217, 255, 0.1);
+    
+    h3 {
+      color: #00D9FF;
+      margin-bottom: 10px;
+    }
+    
+    p {
+      color: #666;
+      line-height: 1.6;
+    }
+  }
+
+  :deep(.el-card) {
+    border-radius: 16px;
+    border: none;
+    box-shadow: 0 8px 24px rgba(0, 217, 255, 0.15);
+    background: #ffffff;
+  }
+
+  :deep(.el-button--text) {
+    color: #00D9FF;
+    font-weight: 600;
+    
+    &:hover {
+      color: #4FD1C5;
+    }
+  }
+
+  :deep(.el-tooltip) {
+    span {
+      font-weight: 700;
+    }
   }
 </style>
