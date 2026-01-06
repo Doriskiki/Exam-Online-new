@@ -222,8 +222,6 @@
         duration: 0,
         //摄像头对象
         mediaStreamTrack: null,
-        //诚信照片的url
-        takePhotoUrl: [],
         //摄像头是否开启
         cameraOn: false,
         //人脸识别相关
@@ -252,19 +250,6 @@
           // 启动定时人脸识别验证
           this.startFaceVerifyTimer()
         }, 1000)
-
-        //生成3次时间点截图
-        let times = []
-        for (let i = 0; i < 2; i++) {
-          times.push(Math.ceil(Math.random() * this.duration * 1000))
-        }
-        times.push(10000)
-        //一次考试最多3次随机的诚信截图
-        times.forEach(item => {
-          window.setTimeout(() => {
-            this.takePhoto()
-          }, item)
-        })
       }
     },
     mounted () {
@@ -318,18 +303,47 @@
       },
       //查询考试的题目信息
       async getQuestionInfo (ids) {
-        await ids.forEach((item, index) => {
-          this.$http.get(this.API.getQuestionById + '/' + item).then((resp) => {
-            if (index === 0) this.questionInfo = []
-            if (resp.data.code === 200) {
-              this.questionInfo.push(resp.data.data)
-              //重置问题的顺序：单选 多选 判断 简答
-              this.questionInfo = this.questionInfo.sort(function (a, b) {
-                return a.questionType - b.questionType
-              })
-            }
-          })
+        const promises = ids.map((item, index) => {
+          return this.$http.get(this.API.getQuestionById + '/' + item)
+            .then((resp) => {
+              if (resp.data.code === 200) {
+                return resp.data.data
+              } else {
+                console.error(`获取题目 ${item} 失败:`, resp.data.message)
+                return null
+              }
+            })
+            .catch((error) => {
+              console.error(`获取题目 ${item} 出错:`, error)
+              this.$message.error(`题目 ${item} 加载失败，可能已被删除`)
+              return null
+            })
         })
+        
+        try {
+          const results = await Promise.all(promises)
+          this.questionInfo = results.filter(item => item !== null)
+          
+          if (this.questionInfo.length === 0) {
+            this.$message.error('没有可用的题目，请联系管理员')
+            this.$router.push('/examOnline')
+            return
+          }
+          
+          //重置问题的顺序：单选 多选 判断 简答
+          this.questionInfo = this.questionInfo.sort(function (a, b) {
+            return a.questionType - b.questionType
+          })
+          
+          if (this.questionInfo.length < ids.length) {
+            this.$message.warning(`部分题目加载失败，当前可用题目: ${this.questionInfo.length}/${ids.length}`)
+          }
+        } catch (error) {
+          console.error('获取题目信息失败:', error)
+          this.$message.error('题目加载失败，请稍后重试')
+          this.$router.push('/examOnline')
+        }
+        
         this.loading.close()
         this.show = true
       },
@@ -410,51 +424,6 @@
           })
         })
       },
-      //拍照
-      takePhoto () {
-        return new Promise((resolve, reject) => {
-          try {
-            if (this.cameraOn) {//摄像头是否开启 开启了才执行上传信用图片
-              //获得Canvas对象
-              let video = document.getElementById('video')
-              let canvas = document.getElementById('canvas')
-              
-              if (!video || !canvas) {
-                console.warn('视频或画布元素不存在')
-                resolve()
-                return
-              }
-              
-              let ctx = canvas.getContext('2d')
-              ctx.drawImage(video, 0, 0, 200, 200)
-              // toDataURL  ---  可传入'image/png'---默认, 'image/jpeg'
-              let img = canvas.toDataURL()
-
-              //构造post的form表单
-              let formData = new FormData()
-              //convertBase64UrlToBlob函数是将base64编码转换为Blob
-              formData.append('file', this.base64ToFile(img, 'examTakePhoto.png'))
-              formData.append('fileType', 'examUserImg')
-              //上传阿里云OSS
-              this.$http.post(this.API.uploadFile, formData).then((resp) => {
-                if (resp.data.code === 200) {
-                  this.takePhotoUrl.push(resp.data.data)
-                  resolve()
-                } else {
-                  reject(new Error('上传失败'))
-                }
-              }).catch(err => {
-                reject(err)
-              })
-            } else {
-              resolve()
-            }
-          } catch (error) {
-            console.error('拍照失败:', error)
-            resolve() // 即使失败也继续执行
-          }
-        })
-      },
       //关闭摄像头
       closeCamera () {
         try {
@@ -470,18 +439,6 @@
         } catch (error) {
           console.error('关闭摄像头失败:', error)
         }
-      },
-      //将摄像头截图的base64串转化为file提交后台
-      base64ToFile (urlData, fileName) {
-        let arr = urlData.split(',')
-        let mime = arr[0].match(/:(.*?);/)[1]
-        let bytes = atob(arr[1]) // 解码base64
-        let n = bytes.length
-        let ia = new Uint8Array(n)
-        while (n--) {
-          ia[n] = bytes.charCodeAt(n)
-        }
-        return new File([ia], fileName, { type: mime })
       },
       //启动定时人脸识别验证
       startFaceVerifyTimer() {
@@ -556,7 +513,6 @@
       //强制提交试卷
       async forceSubmitExam(reason) {
         if (this.cameraOn) {
-          await this.takePhoto()
           this.closeCamera()
         }
         
@@ -569,7 +525,6 @@
         data.questionIds = []
         data.userAnswers = this.userAnswer.join('-')
         data.examId = parseInt(this.$route.params.examId)
-        data.creditImgUrl = this.takePhotoUrl.join(',')
         data.remark = reason // 添加备注说明强制提交原因
         
         this.questionInfo.forEach((item, index) => {
@@ -601,7 +556,6 @@
       },
       //上传用户考试信息进入后台
       async uploadExamToAdmin () {
-        if (this.cameraOn) await this.takePhoto()//结束的时候拍照上传一张
         // 正则
         var reg = new RegExp('-', 'g')
         // 去掉用户输入的非法分割符（-),保证后端接受数据处理不报错
@@ -633,7 +587,6 @@
             let data = {}
             data.questionIds = []
             data.userAnswers = this.userAnswer.join('-')
-            data.creditImgUrl = this.takePhotoUrl.join(',')
             this.questionInfo.forEach((item, index) => {
               data.questionIds.push(item.questionId)
               //当前数据不完整 用户回答不完整 我们自动补充空答案(防止业务出错)
@@ -650,7 +603,6 @@
             }
             data.examId = parseInt(this.$route.params.examId)
             data.questionIds = data.questionIds.join(',')
-            data.creditImgUrl = this.takePhotoUrl.join(',')
             this.$http.post(this.API.addExamRecord, data).then((resp) => {
               if (resp.data.code === 200) {
                 this.$notify({
@@ -660,8 +612,6 @@
                   duration: 2000
                 })
                 if (this.cameraOn) {
-                  //结束的时候拍照上传一张
-                  this.takePhoto()
                   this.closeCamera()
                 }
                 this.$router.push('/examResult/' + resp.data.data)
@@ -677,15 +627,12 @@
           })
         } else {//当前题目做完�?
           if (this.cameraOn) {
-            //结束的时候拍照上传一�?
-            this.takePhoto()
             this.closeCamera()
           }
           let data = {}
           data.questionIds = []
           data.userAnswers = this.userAnswer.join('-')
           data.examId = parseInt(this.$route.params.examId)
-          data.creditImgUrl = this.takePhotoUrl.join(',')
           this.questionInfo.forEach((item, index) => {
             data.questionIds.push(item.questionId)
           })
@@ -727,8 +674,6 @@
         //考试时间结束了提交试�?
         if (newVal < 1) {
           if (this.cameraOn) {
-            //结束的时候拍照上传一�?
-            this.takePhoto()
             this.closeCamera()
           }
           let data = {}
@@ -751,7 +696,6 @@
           data.examId = parseInt(this.$route.params.examId)
 
           data.questionIds = data.questionIds.join(',')
-          data.creditImgUrl = this.takePhotoUrl.join(',')
           this.$http.post(this.API.addExamRecord, data).then((resp) => {
             if (resp.data.code === 200) {
               this.$notify({

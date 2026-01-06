@@ -24,9 +24,8 @@ public class CorsConfig implements WebMvcConfigurer {
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-        List<String> origins = Arrays.asList(allowedOrigins.split(","));
         registry.addMapping("/**")
-                .allowedOriginPatterns(origins.toArray(new String[0]))
+                .allowedOriginPatterns("*")  // 临时允许所有来源
                 .allowedMethods("GET", "HEAD", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowCredentials(true)
                 .maxAge(3600)
@@ -37,8 +36,7 @@ public class CorsConfig implements WebMvcConfigurer {
     @Bean
     public CorsFilter corsFilter() {
         CorsConfiguration config = new CorsConfiguration();
-        List<String> origins = Arrays.asList(allowedOrigins.split(","));
-        origins.forEach(config::addAllowedOriginPattern);
+        config.addAllowedOriginPattern("*");  // 临时允许所有来源
         config.setAllowCredentials(true);
         config.addAllowedMethod("*");
         config.addAllowedHeader("*");

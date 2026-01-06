@@ -1,25 +1,6 @@
 <template>
   <el-container>
     <el-header height="220">
-      <!-- 人脸注册提示 -->
-      <el-alert
-        title="温馨提示：参加考试前请先完成人脸注册"
-        type="info"
-        :closable="true"
-        show-icon
-        style="margin-bottom: 15px;">
-        <template slot="default">
-          <span>本系统采用人脸识别验证身份，请先注册人脸信息。</span>
-          <el-button 
-            type="text" 
-            size="small"
-            @click="$router.push('/faceRegister')"
-            style="margin-left: 10px;">
-            立即注册 →
-          </el-button>
-        </template>
-      </el-alert>
-
       <div style="display: flex; align-items: center;">
         <el-select
           @change="typeChange"

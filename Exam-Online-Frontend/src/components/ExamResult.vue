@@ -200,15 +200,22 @@
       },
       //根据id查询题目信息
       async getQuestionInfoById (questionId) {
-        await this.$http.get(this.API.getQuestionById + '/' + questionId).then((resp) => {
-          if (resp.data.code === 200) {
-            this.questionInfo.push(resp.data.data)
-            //重置问题的顺序 单选 多选 判断 简答
-            this.questionInfo = this.questionInfo.sort(function (a, b) {
-              return a.questionType - b.questionType
-            })
-          }
-        })
+        await this.$http.get(this.API.getQuestionById + '/' + questionId)
+          .then((resp) => {
+            if (resp.data.code === 200) {
+              this.questionInfo.push(resp.data.data)
+              //重置问题的顺序 单选 多选 判断 简答
+              this.questionInfo = this.questionInfo.sort(function (a, b) {
+                return a.questionType - b.questionType
+              })
+            } else {
+              console.error(`获取题目 ${questionId} 失败:`, resp.data.message);
+            }
+          })
+          .catch(error => {
+            console.error(`获取题目 ${questionId} 出错:`, error);
+            this.$message.error(`题目 ${questionId} 加载失败，可能已被删除`);
+          })
       },
       //点击展示高清大图
       showBigImg (url) {

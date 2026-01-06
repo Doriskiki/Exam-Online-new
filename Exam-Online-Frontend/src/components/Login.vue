@@ -39,7 +39,7 @@
                 placeholder="验证码"
               ></el-input>
               <img
-                src="http://localhost:8888/util/getCodeImg"
+                src="http://localhost:8889/util/getCodeImg"
                 @click="changeCode"
                 id="code"
                 style="float: right;margin-top: 4px;cursor: pointer"
@@ -229,7 +229,7 @@ export default {
     //点击图片刷新验证码
     changeCode() {
       const code = document.querySelector("#code");
-      code.src = "http://localhost:8888/util/getCodeImg?id=" + Math.random();
+      code.src = "http://localhost:8889/util/getCodeImg?id=" + Math.random();
       code.onload = () => this.getCode();
     },
     //获取后台验证码

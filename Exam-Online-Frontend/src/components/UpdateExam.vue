@@ -410,17 +410,41 @@ export default {
           if (resp.data.code === 200) {
             this.examInfo = resp.data.data;
             let scores = resp.data.data.scores.split(",");
-            resp.data.data.questionIds.split(",").forEach((item, index) => {
-              this.$http.get(this.API.getQuestionById + "/" + item).then(r => {
-                this.updateExamQuestion.push({
-                  questionId: parseInt(item),
-                  questionType: r.data.data.questionType,
-                  questionContent: r.data.data.questionContent,
-                  score: scores[index]
+            const questionIds = resp.data.data.questionIds.split(",");
+            
+            const promises = questionIds.map((item, index) => {
+              return this.$http.get(this.API.getQuestionById + "/" + item)
+                .then(r => {
+                  if (r.data.code === 200) {
+                    return {
+                      questionId: parseInt(item),
+                      questionType: r.data.data.questionType,
+                      questionContent: r.data.data.questionContent,
+                      score: scores[index]
+                    };
+                  } else {
+                    console.error(`获取题目 ${item} 失败:`, r.data.message);
+                    return null;
+                  }
+                })
+                .catch(error => {
+                  console.error(`获取题目 ${item} 出错:`, error);
+                  this.$message.error(`题目 ${item} 加载失败，可能已被删除`);
+                  return null;
                 });
-              });
             });
-            this.pageLoading = false;
+            
+            Promise.all(promises).then(results => {
+              this.updateExamQuestion = results.filter(item => item !== null);
+              if (this.updateExamQuestion.length < questionIds.length) {
+                this.$message.warning(`部分题目加载失败，当前可用题目: ${this.updateExamQuestion.length}/${questionIds.length}`);
+              }
+              this.pageLoading = false;
+            }).catch(error => {
+              console.error('获取题目信息失败:', error);
+              this.$message.error('题目加载失败，请稍后重试');
+              this.pageLoading = false;
+            });
           }
         });
     },

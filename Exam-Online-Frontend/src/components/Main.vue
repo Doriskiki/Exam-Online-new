@@ -196,7 +196,7 @@
           <el-form-item label="头像" prop="password">
             <el-upload
               class="avatar-uploader"
-              action="http://localhost:8888/upload"
+              action="http://localhost:8889/upload"
               :show-file-list="false"
               :headers="headers"
               :data="uploadData"

@@ -346,7 +346,13 @@ export default {
             this.questionInfo = this.questionInfo.sort(function(a, b) {
               return a.questionType - b.questionType;
             });
+          } else {
+            console.error(`获取题目 ${questionId} 失败:`, resp.data.message);
           }
+        })
+        .catch(error => {
+          console.error(`获取题目 ${questionId} 出错:`, error);
+          this.$message.error(`题目 ${questionId} 加载失败，可能已被删除`);
         });
     },
     showErrorQuestion(row) {

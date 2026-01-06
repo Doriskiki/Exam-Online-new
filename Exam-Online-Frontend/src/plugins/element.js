@@ -3,7 +3,7 @@ import {
   Button, Container, Main, Row, Footer, Card, FormItem, Form, Input, Message, MessageBox, Aside, MenuItemGroup,
   Menu, MenuItem,Submenu,Col,Header,Tooltip,Breadcrumb,BreadcrumbItem,Dropdown,DropdownItem,DropdownMenu,Notification,
   Tag,TableColumn,Table,Select,Option,Pagination,Dialog,Loading,Upload,Checkbox,CheckboxGroup,DatePicker,Step,Steps,
-  RadioGroup,Radio,Alert,InputNumber,Scrollbar,Image,Link
+  RadioGroup,Radio,Alert,InputNumber,Scrollbar,Image,Link,Divider
 } from 'element-ui'
 
 Vue.prototype.$message = Message
@@ -56,3 +56,4 @@ Vue.use(Submenu)
 Vue.use(Breadcrumb)
 Vue.use(Image)
 Vue.use(Link)
+Vue.use(Divider)

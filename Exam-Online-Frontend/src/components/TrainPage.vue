@@ -14,14 +14,22 @@
 
           <!--题目中的配图-->
           <div v-if="currentBankQuestion[curIndex].images && currentBankQuestion[curIndex].images.length > 0" style="margin-top: 15px;">
-            <img v-for="(url, imgIndex) in currentBankQuestion[curIndex].images" 
+            <div v-for="(url, imgIndex) in currentBankQuestion[curIndex].images" 
                  :key="imgIndex"
-                 :src="url" 
-                 title="点击查看大图" 
-                 alt="题目图片"
-                 style="width: 200px;height: 200px;cursor: pointer;margin-right: 10px;object-fit: cover;border: 2px solid #F0FDFF;border-radius: 8px;" 
-                 @click="showBigImg(url)"
-                 @error="handleImageError">
+                 style="display: inline-block; margin-right: 10px; position: relative;">
+              <img :src="normalizeImageUrl(url)" 
+                   :data-key="curIndex + '_' + imgIndex"
+                   title="点击查看大图" 
+                   alt="题目图片"
+                   style="width: 200px;height: 200px;cursor: pointer;object-fit: cover;border: 2px solid #F0FDFF;border-radius: 8px;" 
+                   @click="showBigImg(url)"
+                   @error="handleImageError">
+              <div v-if="imageLoadError[curIndex + '_' + imgIndex]" 
+                   style="width: 200px;height: 200px;border: 2px solid #ff6b6b;border-radius: 8px;display: flex;flex-direction: column;align-items: center;justify-content: center;background: #ffe0e0;font-size: 14px;text-align: center;padding: 10px;position: absolute;top: 0;left: 0;">
+                <div>图片加载失败</div>
+                <a :href="url" target="_blank" style="color: #00D9FF;text-decoration: underline;font-size: 12px;margin-top: 5px;">在新窗口打开</a>
+              </div>
+            </div>
           </div>
 
           <!--单选的答案列表-->
@@ -34,14 +42,21 @@
                    :class="{'active': index === userAnswer[curIndex]}">
                 <span>{{ optionName[index] + '.' + item.answer}}</span>
                 <div v-if="item.images !== null && item.images.length > 0" class="answer-images">
-                  <img v-for="(i2, i2Index) in item.images" 
+                  <div v-for="(i2, i2Index) in item.images" 
                        :key="i2Index"
-                       :src="i2" 
-                       alt="" 
-                       title="点击查看大图"
-                       @click.stop="showBigImg(i2)"
-                       @error="handleImageError"
-                       style="width: 40px;height: 40px;cursor: pointer;margin-left: 10px;object-fit: cover;border: 2px solid #F0FDFF;border-radius: 4px;">
+                       style="display: inline-block; position: relative; margin-right: 10px;">
+                    <img :src="normalizeImageUrl(i2)" 
+                         :data-key="curIndex + '_single_' + index + '_' + i2Index"
+                         alt="" 
+                         title="点击查看大图"
+                         @click.stop="showBigImg(i2)"
+                         @error="handleImageError"
+                         style="width: 40px;height: 40px;cursor: pointer;object-fit: cover;border: 2px solid #F0FDFF;border-radius: 4px;">
+                    <div v-if="imageLoadError[curIndex + '_single_' + index + '_' + i2Index]" 
+                         style="width: 40px;height: 40px;border: 2px solid #ff6b6b;border-radius: 4px;display: flex;align-items: center;justify-content: center;background: #ffe0e0;font-size: 8px;text-align: center;position: absolute;top: 0;left: 0;">
+                      失败
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -62,14 +77,21 @@
                    :class="{'active': userAnswer[curIndex] !== undefined && (userAnswer[curIndex]+'').indexOf(index+'') !== -1}">
                 <span>{{ optionName[index] + '.' + item.answer}}</span>
                 <div v-if="item.images !== null && item.images.length > 0" class="answer-images">
-                  <img v-for="(i2, i2Index) in item.images" 
+                  <div v-for="(i2, i2Index) in item.images" 
                        :key="i2Index"
-                       :src="i2" 
-                       alt="" 
-                       title="点击查看大图"
-                       @click.stop="showBigImg(i2)"
-                       @error="handleImageError"
-                       style="width: 40px;height: 40px;cursor: pointer;margin-left: 10px;object-fit: cover;border: 2px solid #F0FDFF;border-radius: 4px;">
+                       style="display: inline-block; position: relative; margin-right: 10px;">
+                    <img :src="normalizeImageUrl(i2)" 
+                         :data-key="curIndex + '_multiple_' + index + '_' + i2Index"
+                         alt="" 
+                         title="点击查看大图"
+                         @click.stop="showBigImg(i2)"
+                         @error="handleImageError"
+                         style="width: 40px;height: 40px;cursor: pointer;object-fit: cover;border: 2px solid #F0FDFF;border-radius: 4px;">
+                    <div v-if="imageLoadError[curIndex + '_multiple_' + index + '_' + i2Index]" 
+                         style="width: 40px;height: 40px;border: 2px solid #ff6b6b;border-radius: 4px;display: flex;align-items: center;justify-content: center;background: #ffe0e0;font-size: 8px;text-align: center;position: absolute;top: 0;left: 0;">
+                      失败
+                    </div>
+                  </div>
                 </div>
               </div>
               <el-button size="small" type="primary" v-show="!confirmMultiple.includes(curIndex)"
@@ -180,7 +202,11 @@
         //用户答错几题
         wrongSum: 0,
         //已经确定答案的多选题序号
-        confirmMultiple: []
+        confirmMultiple: [],
+        //图片加载错误标记
+        imageLoadError: {},
+        //图片fallback尝试记录 - 改为数组记录尝试次数
+        imageFallbackAttempts: {}
       }
     },
     props: ['tagInfo'],
@@ -290,12 +316,91 @@
       },
       //点击展示高清大图
       showBigImg (url) {
-        this.bigImgUrl = url
+        this.bigImgUrl = this.normalizeImageUrl(url)
         this.bigImgDialog = true
+      },
+      //标准化图片URL，处理不同端口和协议
+      normalizeImageUrl(url) {
+        if (!url) return ''
+        
+        // 如果是完整的URL（阿里云OSS或其他外部URL），直接返回
+        if (url.startsWith('http://') || url.startsWith('https://')) {
+          return url
+        }
+        
+        // 如果是相对路径，构建完整URL
+        const baseUrl = this.$http.defaults.baseURL.replace(/\/$/, '')
+        
+        // 如果URL已经包含/images/，直接拼接
+        if (url.startsWith('/images/')) {
+          return baseUrl + url
+        }
+        
+        // 如果URL以/开头但不包含/images/，添加/images前缀
+        if (url.startsWith('/')) {
+          return baseUrl + '/images' + url
+        }
+        
+        // 如果是相对路径（如 question/filename.jpg），添加/images/前缀
+        return baseUrl + '/images/' + url
       },
       //图片加载失败处理
       handleImageError(e) {
-        console.error('图片加载失败:', e.target.src)
+        const originalUrl = e.target.src
+        console.error('图片加载失败:', originalUrl)
+        
+        const imgKey = e.target.getAttribute('data-key')
+        if (imgKey) {
+          // 初始化或获取尝试次数
+          if (!this.imageFallbackAttempts[imgKey]) {
+            this.$set(this.imageFallbackAttempts, imgKey, 0)
+          }
+          
+          const attemptCount = this.imageFallbackAttempts[imgKey]
+          
+          // 最多尝试3次
+          if (attemptCount >= 3) {
+            this.$set(this.imageLoadError, imgKey, true)
+            e.target.style.display = 'none'
+            return
+          }
+          
+          // 增加尝试次数
+          this.$set(this.imageFallbackAttempts, imgKey, attemptCount + 1)
+          
+          let fallbackUrl = null
+          
+          // 第一次尝试：移除可能的重复路径
+          if (attemptCount === 0) {
+            if (originalUrl.includes('/images/images/')) {
+              fallbackUrl = originalUrl.replace('/images/images/', '/images/')
+              console.log('尝试修复重复的images路径:', fallbackUrl)
+            } else if (originalUrl.includes('/question/question/')) {
+              fallbackUrl = originalUrl.replace('/question/question/', '/question/')
+              console.log('尝试修复重复的question路径:', fallbackUrl)
+            }
+          }
+          // 第二次尝试：切换端口 8889 -> 8080
+          else if (attemptCount === 1 && originalUrl.includes('localhost:8889')) {
+            fallbackUrl = originalUrl.replace('localhost:8889', 'localhost:8080')
+            console.log('尝试切换到8080端口:', fallbackUrl)
+          }
+          // 第三次尝试：切换端口 8080 -> 8889
+          else if (attemptCount === 2 && originalUrl.includes('localhost:8080')) {
+            fallbackUrl = originalUrl.replace('localhost:8080', 'localhost:8889')
+            console.log('尝试切换到8889端口:', fallbackUrl)
+          }
+          
+          if (fallbackUrl) {
+            e.target.src = fallbackUrl
+            return
+          }
+          
+          // 如果没有合适的fallback，显示错误状态
+          this.$set(this.imageLoadError, imgKey, true)
+        }
+        
+        // 隐藏图片
         e.target.style.display = 'none'
       },
       //检验单选题的用户选择的答案
@@ -308,6 +413,8 @@
           this.userAnswer[this.curIndex] = index
           this.wrongSum++
         }
+        // 重置当前题目的图片错误状态
+        this.resetImageErrorsForCurrentQuestion()
       },
       //多选题用户的答案选中
       selectedMultipleAnswer (index) {
@@ -355,6 +462,18 @@
           this.wrongSum++
           this.confirmMultiple.push(this.curIndex)
         }
+        // 重置当前题目的图片错误状态
+        this.resetImageErrorsForCurrentQuestion()
+      },
+      //重置当前题目的图片错误状态
+      resetImageErrorsForCurrentQuestion() {
+        // 清除当前题目相关的图片错误状态
+        Object.keys(this.imageLoadError).forEach(key => {
+          if (key.startsWith(this.curIndex + '_')) {
+            this.$delete(this.imageLoadError, key)
+            this.$delete(this.imageFallbackAttempts, key)
+          }
+        })
       },
     },
     computed: {

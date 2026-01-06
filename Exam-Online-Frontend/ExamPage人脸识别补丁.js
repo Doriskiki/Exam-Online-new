@@ -260,7 +260,7 @@ methods: {
 /*
 1. 将上述代码复制到 ExamPage.vue 的对应位置
 2. 确保 Python 人脸识别服务已启动（端口5000）
-3. 确保 Java 后端已启动（端口8888）
+3. 确保 Java 后端已启动（端口8889）
 4. 确保在登录时保存了 userId 到 localStorage
 
 测试步骤：

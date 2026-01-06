@@ -10,7 +10,7 @@
 (async function fixUserId() {
   console.log('🔧 开始修复 userId 问题...\n');
   
-  const API_BASE = 'http://localhost:8888';
+  const API_BASE = 'http://localhost:8889';
   const token = localStorage.getItem('authorization');
   
   // 1. 检查 token

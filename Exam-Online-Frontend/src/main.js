@@ -9,7 +9,7 @@ import echarts from 'echarts'
 Vue.prototype.$echarts = echarts
 
 //配置请求根路径
-axios.defaults.baseURL = 'http://localhost:8888/'  // 如果后端端口不是8888，请修改这里
+axios.defaults.baseURL = 'http://localhost:8889/'  // 修改为后端实际端口8889
 //axios拦截器拦截每一个请求,有token就配置头信息的token
 axios.interceptors.request.use(config => {
   let token = window.localStorage.getItem('authorization')
@@ -29,6 +29,25 @@ Vue.prototype.API = api.API.api
  */
 Vue.prototype.$http = axios
 Vue.config.productionTip = false
+
+// 全局处理未捕获的Promise rejection
+window.addEventListener('unhandledrejection', event => {
+  // 检查是否是Element UI MessageBox的取消操作
+  if (event.reason === 'cancel' || 
+      (event.reason && event.reason.toString().includes('cancel'))) {
+    // 阻止控制台显示错误
+    event.preventDefault()
+  }
+})
+
+// Vue全局错误处理
+Vue.config.errorHandler = (err, vm, info) => {
+  // 忽略Element UI MessageBox的取消错误
+  if (err && err.toString().includes('cancel')) {
+    return
+  }
+  console.error('Vue Error:', err, info)
+}
 
 //全局过滤器(秒数转化为分钟)
 Vue.filter('timeFormat',function (time) {

@@ -166,7 +166,18 @@ export default {
               type: "error",
               duration: 2000
             });
+            this.loading = false;
           }
+        })
+        .catch(error => {
+          console.error('获取题库信息失败:', error);
+          this.$notify({
+            title: "错误",
+            message: "获取题库信息失败，请稍后重试",
+            type: "error",
+            duration: 2000
+          });
+          this.loading = false;
         });
     },
     //查询内容变化
@@ -208,6 +219,15 @@ export default {
                     duration: 2000
                   });
                 }
+              })
+              .catch(error => {
+                console.error('删除题库失败:', error);
+                this.$notify({
+                  title: "错误",
+                  message: "删除题库失败，请稍后重试",
+                  type: "error",
+                  duration: 2000
+                });
               });
           })
           .catch(() => {
@@ -236,25 +256,36 @@ export default {
     addQuestionBank() {
       this.$refs["addForm"].validate(valid => {
         if (valid) {
-          this.$http.post(this.API.addQuestionBank, this.addForm).then(resp => {
-            if (resp.data.code === 200) {
-              this.getBankInfo();
+          this.$http.post(this.API.addQuestionBank, this.addForm)
+            .then(resp => {
+              if (resp.data.code === 200) {
+                this.getBankInfo();
+                this.$notify({
+                  title: "提示",
+                  message: resp.data.message,
+                  type: "success",
+                  duration: 2000
+                });
+              } else {
+                this.$notify({
+                  title: "提示",
+                  message: resp.data.message,
+                  type: "error",
+                  duration: 2000
+                });
+              }
+              this.addTableVisible = false;
+            })
+            .catch(error => {
+              console.error('添加题库失败:', error);
               this.$notify({
-                title: "提示",
-                message: resp.data.message,
-                type: "success",
-                duration: 2000
-              });
-            } else {
-              this.$notify({
-                title: "提示",
-                message: resp.data.message,
+                title: "错误",
+                message: "添加题库失败，请稍后重试",
                 type: "error",
                 duration: 2000
               });
-            }
-            this.addTableVisible = false;
-          });
+              this.addTableVisible = false;
+            });
         } else {
           this.$message.error("请检查您所填写的信息是否有误");
           return false;

@@ -239,7 +239,7 @@
 
           <el-form-item label="题目图片" label-width="120px">
             <el-upload
-              action="http://localhost:8888/upload"
+              action="http://localhost:8889/upload"
               :on-preview="uploadPreview"
               :on-remove="handleUpdateRemove"
               :headers="headers"
@@ -301,7 +301,7 @@
                   <el-upload
                     id="answerUpload"
                     :limit="1"
-                    action="http://localhost:8888/teacher/uploadQuestionImage"
+                    action="http://localhost:8889/teacher/uploadQuestionImage"
                     :on-preview="uploadPreview"
                     :on-remove="handleUpdateAnswerRemove"
                     :headers="headers"
@@ -431,7 +431,7 @@
 
           <el-form-item label="题目图片" label-width="120px" prop="image">
             <el-upload
-              action="http://localhost:8888/upload"
+              action="http://localhost:8889/upload"
               :on-preview="uploadPreview"
               :on-remove="handleRemove"
               :headers="headers"
@@ -490,7 +490,7 @@
                 <template slot-scope="scope">
                   <el-upload
                     :limit="1"
-                    action="http://localhost:8888/teacher/uploadQuestionImage"
+                    action="http://localhost:8889/teacher/uploadQuestionImage"
                     :on-preview="uploadPreview"
                     :on-remove="handleAnswerRemove"
                     :headers="headers"
@@ -1235,33 +1235,42 @@ export default {
     },
     //更新题目
     updateQu(id) {
-      this.$http.get(this.API.getQuestionById + "/" + id).then(resp => {
-        if (resp.data.code === 200) {
-          if (resp.data.data.questionType !== 4) {
-            resp.data.data.answer.map(item => {
-              item.isTrue = item.isTrue === "true";
-            });
-          }
-          this.updateQuForm = resp.data.data;
-          //处理图片那个参数是个数组
-          if (this.updateQuForm.images === null) this.updateQuForm.images = [];
+      this.$http.get(this.API.getQuestionById + "/" + id)
+        .then(resp => {
+          if (resp.data.code === 200) {
+            if (resp.data.data.questionType !== 4) {
+              resp.data.data.answer.map(item => {
+                item.isTrue = item.isTrue === "true";
+              });
+            }
+            this.updateQuForm = resp.data.data;
+            //处理图片那个参数是个数组
+            if (this.updateQuForm.images === null) this.updateQuForm.images = [];
 
-          if (resp.data.data.questionType !== 4) {
-            this.updateQuForm.answer.map(item => {
+            if (resp.data.data.questionType !== 4) {
+              this.updateQuForm.answer.map(item => {
               if (item.images === null) {
                 item.images = [];
               }
             });
           }
+          this.updateQuTableVisible = true;
         } else {
           this.$notify({
             title: "提示",
             type: "error",
-            message: "获取信息失败"
+            message: resp.data.message || "获取题目信息失败"
           });
         }
+      })
+      .catch(error => {
+        console.error('获取题目信息出错:', error);
+        this.$notify({
+          title: "错误",
+          type: "error",
+          message: "题目可能已被删除或服务器出错，请刷新页面重试"
+        });
       });
-      this.updateQuTableVisible = true;
     },
     //提交更新表单
     updateQuestion() {
