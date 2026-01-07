@@ -23,7 +23,8 @@ public class UploadUtils {
 
         // 日志记录上传文件的路径
         log.info("上传文件的路径为：{}",uploadDir);
-        String fullDirPath = uploadDir + "\\" + fileType + '\\';
+        // Fix: Use File.separator for cross-platform compatibility (works on Mac/Linux/Windows)
+        String fullDirPath = uploadDir + File.separator + fileType + File.separator;
         // 创建文件目录对象
         File dir = new File(fullDirPath);
         // 检查目录是否存在，不存在则创建
