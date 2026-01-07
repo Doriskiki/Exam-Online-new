@@ -67,11 +67,13 @@ public class OSSUtil {
         //上传开始
         ossClient.putObject(BUCKETNAME, KEY + date + "/" + fileName, new ByteArrayInputStream(uploadFile.getBytes()),objectMetadata);
 
+        // 生成签名URL (有效期10年，适用于私有Bucket)
+        Date expiration = new Date(new Date().getTime() + 3600L * 1000 * 24 * 365 * 10);
+        String url = ossClient.generatePresignedUrl(BUCKETNAME, KEY + date + "/" + fileName, expiration).toString();
+
         // 关闭client
         ossClient.shutdown();
-//        Date expiration = new Date(new Date().getTime() + 3600L * 1000 * 24 * 365 * 10);
-//        return ossClient.generatePresignedUrl(BUCKETNAME, KEY + date + "/" + uploadFile.getOriginalFilename(), expiration).toString();
-        return "https://" + BUCKETNAME + "." + ENDPOINT + "/" + KEY + date + "/" + fileName;
+        return url;
     }
 
     //根据文件的类型 设置请求头

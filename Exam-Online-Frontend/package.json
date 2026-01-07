@@ -14,9 +14,11 @@
   },
   "dependencies": {
     "axios": "^0.20.0",
+    "crypto-js": "^4.2.0",
     "core-js": "^3.6.5",
     "echarts": "^4.9.0",
     "element-ui": "^2.4.5",
+    "idb": "^7.1.1",
     "nprogress": "^0.2.0",
     "sass-loader": "^10.0.3",
     "vue": "^2.6.11",
