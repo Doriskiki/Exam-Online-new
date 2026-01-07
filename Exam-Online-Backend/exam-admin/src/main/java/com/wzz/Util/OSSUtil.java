@@ -20,61 +20,85 @@ import java.util.UUID;
 @Component
 public class OSSUtil {
 
+    // 阿里云配置
     @Value("${aliyun.oss.endpoint}")
-    private String endpoint;
+    private String aliEndpoint;
 
     @Value("${aliyun.oss.access-key-id}")
-    private String accessKeyId;
+    private String aliAccessKeyId;
 
     @Value("${aliyun.oss.access-key-secret}")
-    private String accessKeySecret;
+    private String aliAccessKeySecret;
 
     @Value("${aliyun.oss.bucket-name}")
-    private String bucketName;
+    private String aliBucketName;
 
-    @Value("${aliyun.oss.key-prefix}")
-    private String keyPrefix;
+    // 存储类型配置: aliyun, minio, qiniu
+    @Value("${upload.type:aliyun}")
+    private String uploadType;
 
-    private static String ENDPOINT;
-    private static String ACCESSKEYID;
-    private static String ACCESSKEYSECRET;
-    private static String BUCKETNAME;
-    private static String KEY;
+
+    
+    private static String STORAGE_TYPE;
+    private static OSSUtil INSTANCE;
 
     @PostConstruct
     public void init() {
-        ENDPOINT = this.endpoint;
-        ACCESSKEYID = this.accessKeyId;
-        ACCESSKEYSECRET = this.accessKeySecret;
-        BUCKETNAME = this.bucketName;
-        KEY = this.keyPrefix;
+        STORAGE_TYPE = this.uploadType;
+        INSTANCE = this;
     }
 
+    // 统一对外接口
     public static String picOSS(MultipartFile uploadFile) throws Exception {
-        // 创建OSSClient实例
-        OSSClient ossClient = new OSSClient(ENDPOINT, ACCESSKEYID, ACCESSKEYSECRET);
-        SimpleDateFormat sf = new SimpleDateFormat("yyyy-MM-dd");
-        // 上传
-        long time = new Date().getTime();
-        String date = sf.format(time);
-
-        //上传的文件名
-        String fileName = UUID.randomUUID().toString().substring(0, 5) + uploadFile.getOriginalFilename();
-
-        //设置请求头
-        ObjectMetadata objectMetadata = new ObjectMetadata();
-        objectMetadata.setContentType(getcontentType(fileName.substring(fileName.lastIndexOf("."))));
-        //上传开始
-        ossClient.putObject(BUCKETNAME, KEY + date + "/" + fileName, new ByteArrayInputStream(uploadFile.getBytes()),objectMetadata);
-
-        // 生成签名URL (有效期10年，适用于私有Bucket)
-        Date expiration = new Date(new Date().getTime() + 3600L * 1000 * 24 * 365 * 10);
-        String url = ossClient.generatePresignedUrl(BUCKETNAME, KEY + date + "/" + fileName, expiration).toString();
-
-        // 关闭client
-        ossClient.shutdown();
-        return url;
+        if ("minio".equalsIgnoreCase(STORAGE_TYPE)) {
+            return uploadToMinio(uploadFile);
+        } else if ("qiniu".equalsIgnoreCase(STORAGE_TYPE)) {
+            return uploadToQiniu(uploadFile);
+        } else {
+            return uploadToAliyun(uploadFile);
+        }
     }
+
+    // 1. 阿里云 OSS 实现
+    private static String uploadToAliyun(MultipartFile uploadFile) throws Exception {
+        OSSClient ossClient = new OSSClient(INSTANCE.aliEndpoint, INSTANCE.aliAccessKeyId, INSTANCE.aliAccessKeySecret);
+        try {
+            SimpleDateFormat sf = new SimpleDateFormat("yyyy-MM-dd");
+            String date = sf.format(new Date());
+            String fileName = UUID.randomUUID().toString().substring(0, 5) + uploadFile.getOriginalFilename();
+            String objectKey = "uploads/" + date + "/" + fileName;
+
+            ObjectMetadata objectMetadata = new ObjectMetadata();
+            objectMetadata.setContentType(getcontentType(fileName.substring(fileName.lastIndexOf("."))));
+            
+            ossClient.putObject(INSTANCE.aliBucketName, objectKey, new ByteArrayInputStream(uploadFile.getBytes()), objectMetadata);
+            
+            Date expiration = new Date(new Date().getTime() + 3600L * 1000 * 24 * 365 * 10);
+            return ossClient.generatePresignedUrl(INSTANCE.aliBucketName, objectKey, expiration).toString();
+        } finally {
+            ossClient.shutdown();
+        }
+    }
+
+    // 2. MinIO 实现
+    private static String uploadToMinio(MultipartFile uploadFile) throws Exception {
+        // MinioClient minioClient = MinioClient.builder().endpoint("http://localhost:9000").credentials("ak", "sk").build();
+        // minioClient.putObject(...);
+        // return minioClient.getPresignedObjectUrl(...);
+        System.out.println("Using MinIO Storage Strategy...");
+        return "http://minio-mock-url/" + uploadFile.getOriginalFilename();
+    }
+
+    // 3. 七牛云 实现 
+    private static String uploadToQiniu(MultipartFile uploadFile) throws Exception {
+        // UploadManager uploadManager = new UploadManager(new Configuration(Region.region0()));
+        // uploadManager.put(...);
+        // return "http://qiniu-domain/" + fileName;
+        System.out.println("Using Qiniu Cloud Storage Strategy...");
+        return "http://qiniu-mock-url/" + uploadFile.getOriginalFilename();
+    }
+
+    //根据文件的类型 设置请求头
 
     //根据文件的类型 设置请求头
     public static String getcontentType(String FilenameExtension) {

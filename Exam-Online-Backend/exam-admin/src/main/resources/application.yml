@@ -57,10 +57,26 @@ security:
 aliyun:
   oss:
     endpoint: oss-cn-beijing.aliyuncs.com
-    access-key-id: 
-    access-key-secret: 
+    access-key-id:
+    access-key-secret:
     bucket-name: xyz12345678
     key-prefix: uploads/
+
+upload:
+  # 存储类型: aliyun, minio, qiniu
+  type: aliyun
+  # MinIO 配置示例
+  minio:
+    endpoint: http://localhost:9000
+    access-key: minioadmin
+    secret-key: minioadmin
+    bucket: exam-bucket
+  # 七牛云配置示例
+  qiniu:
+    access-key: xxx
+    secret-key: xxx
+    bucket: exam-bucket
+    domain: http://cdn.example.com
 
 mybatis-plus:
   mapper-locations: classpath:mapper/*.xml
@@ -70,7 +86,7 @@ mybatis-plus:
     map-underscore-to-camel-case: true
 
 file:
-  uploadDir: D:/Java/projects/exam_system-master/images/
+  uploadDir: /Users/mac/Downloads/学业/JavaEE/JavaEE 课设/Exam-Online-new/Exam-Online-Backend/images/
 
 face:
   service:
