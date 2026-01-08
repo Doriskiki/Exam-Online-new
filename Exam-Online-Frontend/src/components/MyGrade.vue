@@ -11,7 +11,7 @@
         clearable
         v-model="queryInfo.examId"
         placeholder="请选择考试"
-        style="margin-bottom: 10px;"
+        style="margin-bottom: 10px"
       >
         <el-option
           v-for="(item, index) in allExamInfo"
@@ -38,7 +38,7 @@
         :border="true"
         :data="grade"
         tooltip-effect="dark"
-        style="width: 100%;"
+        style="width: 100%"
       >
         <el-table-column
           align="center"
@@ -144,7 +144,7 @@
             :src="url"
             title="点击查看大图"
             alt="题目图片"
-            style="width: 100px;height: 100px;cursor: pointer"
+            style="width: 100px; height: 100px; cursor: pointer"
             @click="showBigImg(url)"
           />
 
@@ -168,8 +168,16 @@
               >
                 <span>{{ optionName[index2] + "、" + i2.answer }}</span>
                 <img
-                  style="position: absolute;left:100%;top:50%;transform: translateY(-50%);
-                  width: 40px;height: 40px;float: right;cursor: pointer;"
+                  style="
+                    position: absolute;
+                    left: 100%;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    width: 40px;
+                    height: 40px;
+                    float: right;
+                    cursor: pointer;
+                  "
                   title="点击查看大图"
                   v-if="i2.images !== null"
                   v-for="i3 in i2.images"
@@ -199,8 +207,16 @@
               >
                 <span>{{ optionName[index] + "、" + i2.answer }}</span>
                 <img
-                  style="position: absolute;left:100%;top:50%;transform: translateY(-50%);
-                  width: 40px;height: 40px;float: right;cursor: pointer;"
+                  style="
+                    position: absolute;
+                    left: 100%;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    width: 40px;
+                    height: 40px;
+                    float: right;
+                    cursor: pointer;
+                  "
                   title="点击查看大图"
                   v-if="i2.images !== null"
                   v-for="i3 in i2.images"
@@ -235,7 +251,7 @@ export default {
       queryInfo: {
         pageNo: 1,
         pageSize: 10,
-        username: localStorage.getItem("username")
+        username: localStorage.getItem("username"),
       },
       //我的成绩
       grade: [],
@@ -278,13 +294,13 @@ export default {
         "W",
         "X",
         "Y",
-        "Z"
+        "Z",
       ],
       //大图的对话图片地址
       bigImgUrl: "",
       bigImgDialog: false,
       //加载证书的数据加载动画
-      loadingCertificate: false
+      loadingCertificate: false,
     };
   },
   created() {
@@ -294,7 +310,7 @@ export default {
     getMyGrade() {
       this.$http
         .get(this.API.getMyGrade, { params: this.queryInfo })
-        .then(resp => {
+        .then((resp) => {
           if (resp.data.code === 200) {
             this.grade = resp.data.data.examRecords;
             this.total = resp.data.data.total;
@@ -304,8 +320,8 @@ export default {
         });
     },
     setExamName() {
-      this.grade.forEach(item => {
-        this.allExamInfo.forEach(i2 => {
+      this.grade.forEach((item) => {
+        this.allExamInfo.forEach((i2) => {
           if (item.examId === i2.examId) {
             this.$set(item, "examName", i2.examName);
             this.$set(item, "passScore", i2.passScore);
@@ -314,7 +330,7 @@ export default {
       });
     },
     getAllExamInfo() {
-      this.$http.get(this.API.allExamInfo).then(resp => {
+      this.$http.get(this.API.allExamInfo).then((resp) => {
         if (resp.data.code === 200) {
           this.allExamInfo = resp.data.data;
           this.setExamName();
@@ -339,28 +355,68 @@ export default {
     async getQuestionInfoById(questionId) {
       await this.$http
         .get(this.API.getQuestionById + "/" + questionId)
-        .then(resp => {
+        .then((resp) => {
           if (resp.data.code === 200) {
+            // 修复图片链接
+            if (resp.data.data.images) {
+              resp.data.data.images = resp.data.data.images
+                .filter((url) => url && url.trim() !== "")
+                .map((url) => this.normalizeImageUrl(url));
+            }
+            if (resp.data.data.answer) {
+              resp.data.data.answer.forEach((ans) => {
+                if (ans.images) {
+                  ans.images = ans.images
+                    .filter((url) => url && url.trim() !== "")
+                    .map((url) => this.normalizeImageUrl(url));
+                }
+              });
+            }
+
             this.questionInfo.push(resp.data.data);
             //重置问题的顺序：单选、多选、判断
-            this.questionInfo = this.questionInfo.sort(function(a, b) {
+            this.questionInfo = this.questionInfo.sort(function (a, b) {
               return a.questionType - b.questionType;
             });
           } else {
             console.error(`获取题目 ${questionId} 失败:`, resp.data.message);
           }
         })
-        .catch(error => {
+        .catch((error) => {
           console.error(`获取题目 ${questionId} 出错:`, error);
           this.$message.error(`题目 ${questionId} 加载失败，可能已被删除`);
         });
+    },
+    //标准化图片URL，处理不同端口和协议
+    normalizeImageUrl(url) {
+      if (!url) return "";
+      if (typeof url === "string" && url.includes("124.222.121.87")) {
+        try {
+          const urlObj = new URL(url);
+          const baseUrl = this.$http.defaults.baseURL.replace(/\/$/, "");
+          return `${baseUrl}/images${urlObj.pathname}`;
+        } catch (e) {
+          console.error("URL解析失败:", url);
+        }
+      }
+      if (url.startsWith("http://") || url.startsWith("https://")) {
+        return url;
+      }
+      const baseUrl = this.$http.defaults.baseURL.replace(/\/$/, "");
+      if (url.startsWith("/images/")) {
+        return baseUrl + url;
+      }
+      if (url.startsWith("/")) {
+        return baseUrl + "/images" + url;
+      }
+      return baseUrl + "/images/" + url;
     },
     showErrorQuestion(row) {
       if (row.errorQuestionIds === null) {
         this.$message.warning("当前考试没有逻辑错题O(∩_∩)O~");
       } else {
         this.userAnswer = row.userAnswers.split("-");
-        row.errorQuestionIds.split(",").forEach(item => {
+        row.errorQuestionIds.split(",").forEach((item) => {
           this.getQuestionInfoById(item);
         });
         this.errorQuestionDialog = true;
@@ -368,7 +424,7 @@ export default {
     },
     //点击展示高清大图
     showBigImg(url) {
-      this.bigImgUrl = url;
+      this.bigImgUrl = this.normalizeImageUrl(url);
       this.bigImgDialog = true;
     },
     // 获取专属证书
@@ -380,10 +436,10 @@ export default {
         responseType: "arraybuffer", //一定要设置响应类型，否则页面会是空白pdf
         params: {
           examRecordId: recordId,
-          examName: examName
-        }
+          examName: examName,
+        },
       })
-        .then(res => {
+        .then((res) => {
           if (res.status === 200) {
             // 证书获取成功
             const binaryData = [];
@@ -400,36 +456,36 @@ export default {
               title: "提示",
               message: "证书获取失败,请稍后再试",
               type: "error",
-              duration: 2000
+              duration: 2000,
             });
             this.loadingCertificate = false;
           }
         })
-        .catch(res => {
+        .catch((res) => {
           this.$notify({
             title: "提示",
             message: "证书获取失败,请稍后再试",
             type: "error",
-            duration: 2000
+            duration: 2000,
           });
           this.loadingCertificate = false;
         });
-    }
+    },
   },
   computed: {
     //是否通过考试
     isOrNotPassExam(row) {
-      return row => {
+      return (row) => {
         let flag = false;
-        this.allExamInfo.forEach(item => {
+        this.allExamInfo.forEach((item) => {
           if (item.examId === row.examId) {
             flag = row.totalScore >= item.passScore;
           }
         });
         return flag;
       };
-    }
-  }
+    },
+  },
 };
 </script>
 
@@ -437,7 +493,7 @@ export default {
 .el-container {
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, #F0FDFF 0%, #E0F9FF 100%);
+  background: linear-gradient(135deg, #f0fdff 0%, #e0f9ff 100%);
   padding: 20px;
 
   :deep(.el-table) {
@@ -445,9 +501,9 @@ export default {
     overflow: hidden;
     box-shadow: 0 8px 24px rgba(0, 217, 255, 0.15);
     background: #ffffff;
-    
+
     thead th {
-      background: linear-gradient(135deg, #00D9FF 0%, #4FD1C5 100%);
+      background: linear-gradient(135deg, #00d9ff 0%, #4fd1c5 100%);
       color: #ffffff;
       font-weight: bold;
     }
@@ -456,11 +512,11 @@ export default {
   :deep(.el-select) {
     .el-input__inner {
       border-radius: 20px;
-      border: 2px solid #00D9FF;
+      border: 2px solid #00d9ff;
       transition: all 0.3s ease;
-      
+
       &:focus {
-        border-color: #4FD1C5;
+        border-color: #4fd1c5;
         box-shadow: 0 0 0 3px rgba(0, 217, 255, 0.1);
       }
     }
@@ -469,21 +525,21 @@ export default {
   :deep(.el-button) {
     border-radius: 20px;
     transition: all 0.3s ease;
-    
+
     &.el-button--primary {
-      background: linear-gradient(135deg, #00D9FF 0%, #4FD1C5 100%);
+      background: linear-gradient(135deg, #00d9ff 0%, #4fd1c5 100%);
       border: none;
-      
+
       &:hover {
         transform: translateY(-2px);
         box-shadow: 0 6px 20px rgba(0, 217, 255, 0.4);
       }
     }
-    
+
     &.el-button--danger {
       background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
       border: none;
-      
+
       &:hover {
         transform: translateY(-2px);
         box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
@@ -494,17 +550,17 @@ export default {
   :deep(.el-dialog) {
     border-radius: 24px;
     overflow: hidden;
-    
+
     .el-dialog__header {
-      background: linear-gradient(135deg, #00D9FF 0%, #4FD1C5 100%);
+      background: linear-gradient(135deg, #00d9ff 0%, #4fd1c5 100%);
       padding: 20px;
-      
+
       .el-dialog__title {
         color: #ffffff;
         font-weight: bold;
       }
     }
-    
+
     .el-card {
       border-radius: 16px;
       border: none;
@@ -516,16 +572,16 @@ export default {
     .el-pager li {
       border-radius: 8px;
       transition: all 0.3s ease;
-      
+
       &.active {
-        background: linear-gradient(135deg, #00D9FF 0%, #4FD1C5 100%);
+        background: linear-gradient(135deg, #00d9ff 0%, #4fd1c5 100%);
       }
-      
+
       &:hover {
-        color: #00D9FF;
+        color: #00d9ff;
       }
     }
-    
+
     button {
       border-radius: 8px;
     }
@@ -544,8 +600,8 @@ export default {
 }
 
 .examName {
-  color: #00D9FF;
-  border-bottom: 4px solid #4FD1C5;
+  color: #00d9ff;
+  border-bottom: 4px solid #4fd1c5;
   font-size: 18px;
   font-weight: 700;
   padding-bottom: 10px;
@@ -563,14 +619,14 @@ export default {
   width: 400px;
   padding: 48px 20px 10px 20px;
   border-radius: 16px;
-  border: 2px solid #F0FDFF;
+  border: 2px solid #f0fdff;
   margin-bottom: 10px;
   position: relative;
   transition: all 0.3s ease;
   background: #ffffff;
 
   &:hover {
-    border-color: #00D9FF;
+    border-color: #00d9ff;
     box-shadow: 0 4px 12px rgba(0, 217, 255, 0.2);
   }
 
@@ -584,7 +640,7 @@ export default {
 
 .num {
   display: inline-block;
-  background: linear-gradient(135deg, #00D9FF 0%, #4FD1C5 100%);
+  background: linear-gradient(135deg, #00d9ff 0%, #4fd1c5 100%);
   border-radius: 50%;
   height: 37px;
   width: 37px;
@@ -598,12 +654,12 @@ export default {
 }
 
 .active {
-  border: 2px solid #00D9FF !important;
+  border: 2px solid #00d9ff !important;
   background: rgba(0, 217, 255, 0.1);
 }
 
 .activeAndTrue {
-  border: 2px solid #00D9FF !important;
+  border: 2px solid #00d9ff !important;
   background: rgba(0, 217, 255, 0.1);
   height: 15px;
   width: 15px;
@@ -626,7 +682,7 @@ export default {
 
 .ques-analysis {
   padding: 30px 40px;
-  background: linear-gradient(135deg, #F0FDFF 0%, #ffffff 100%);
+  background: linear-gradient(135deg, #f0fdff 0%, #ffffff 100%);
   margin-bottom: 70px;
   border-radius: 16px;
 }

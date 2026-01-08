@@ -4,9 +4,7 @@
     <el-aside id="aside" width="250px">
       <div class="menu-header">
         <img class="logo-img" src="../assets/imgs/logo.jpg" />
-        <span slot="title" v-if="!isCollapse">
-          在线考试系统
-        </span>
+        <span slot="title" v-if="!isCollapse"> 在线考试系统 </span>
       </div>
       <el-menu
         :collapse-transition="false"
@@ -78,7 +76,7 @@
                 <i
                   class="el-icon-s-fold"
                   @click="changeIsCollapse"
-                  style="cursor:pointer;font-size: 25px;font-weight: 100"
+                  style="cursor: pointer; font-size: 25px; font-weight: 100"
                 ></i>
               </el-tooltip>
 
@@ -91,7 +89,7 @@
               <!--右侧的个人信息下拉框-->
               <el-dropdown
                 trigger="click"
-                style="float: right;color: black;cursor:pointer;"
+                style="float: right; color: black; cursor: pointer"
                 @command="handleCommand"
               >
                 <span class="el-dropdown-link">
@@ -108,13 +106,22 @@
                   <el-dropdown-item command="faceManage">
                     <i class="el-icon-setting"></i> 人脸管理
                   </el-dropdown-item>
-                  <el-dropdown-item command="logout" divided>退出登录</el-dropdown-item>
+                  <el-dropdown-item command="logout" divided
+                    >退出登录</el-dropdown-item
+                  >
                 </el-dropdown-menu>
               </el-dropdown>
               <el-image
                 class="image"
-                style="float: right;width: 30px;height: 30px;line-height:30px;border-radius: 50%;margin-right: 10px;"
-                :src="ImageAPI + currentUserInfo.avatar"
+                style="
+                  float: right;
+                  width: 30px;
+                  height: 30px;
+                  line-height: 30px;
+                  border-radius: 50%;
+                  margin-right: 10px;
+                "
+                :src="normalizeAvatar(currentUserInfo.avatar)"
                 fit="fit"
               />
               <!--右侧的放大图标-->
@@ -122,8 +129,14 @@
                 class="el-icon-full-screen"
                 id="full"
                 @click="fullShow"
-                style="float: right;margin-right:10px;
-              margin-bottom:5px;cursor:pointer;font-size: 25px;font-weight: 100"
+                style="
+                  float: right;
+                  margin-right: 10px;
+                  margin-bottom: 5px;
+                  cursor: pointer;
+                  font-size: 25px;
+                  font-weight: 100;
+                "
               ></i>
 
               <!--              &lt;!&ndash;右侧的查看公告图标&ndash;&gt;-->
@@ -157,7 +170,7 @@
           </el-card>
         </el-header>
 
-        <el-main style="margin-top: 25px;">
+        <el-main style="margin-top: 25px">
           <router-view
             @giveChildChangeBreakInfo="giveChildChangeBreakInfo"
             @showSystemNotice="showSystemNotice"
@@ -235,7 +248,7 @@ export default {
       ImageAPI: window.ImageAPI,
       avatarUrl: null,
       uploadData: {
-        fileType: "avatar"
+        fileType: "avatar",
       },
       //菜单信息
       menuInfo: [
@@ -244,10 +257,10 @@ export default {
           url: "",
           children: [
             {
-              url: ""
-            }
-          ]
-        }
+              url: "",
+            },
+          ],
+        },
       ],
       //面板是否收缩
       isCollapse: false,
@@ -256,28 +269,28 @@ export default {
       //当前登录的用户信息
       currentUserInfo: {
         username: "",
-        avatar: null
+        avatar: null,
       },
       //当前激活的菜单
       activeMenu: "",
       //面包屑信息
       breadInfo: {
         top: "产品介绍", //顶级菜单信息
-        sub: "产品介绍" //当前的菜单信息
+        sub: "产品介绍", //当前的菜单信息
       },
       //面包屑下的标签数据
       tags: [
         {
           name: "产品介绍",
           url: "/dashboard",
-          highlight: true
-        }
+          highlight: true,
+        },
       ],
       //跟新当前用户的信息的对话框
       updateCurrentUserDialog: false,
       //当前用户的信息
       currentUserInfo2: {
-        avatar: null
+        avatar: null,
       },
       //更新信息表单信息
       updateUserFormRules: {
@@ -285,16 +298,16 @@ export default {
           {
             required: true,
             message: "请输入真实姓名",
-            trigger: "blur"
-          }
+            trigger: "blur",
+          },
         ],
         password: [
           {
             validator: validatePassword,
-            trigger: "blur"
-          }
-        ]
-      }
+            trigger: "blur",
+          },
+        ],
+      },
     };
   },
   created() {
@@ -305,9 +318,9 @@ export default {
   computed: {
     headers() {
       return {
-        authorization: localStorage.getItem("authorization") || ""
+        authorization: localStorage.getItem("authorization") || "",
       };
-    }
+    },
   },
   mounted() {
     //根据当前链接的hash设置对应高亮的菜单
@@ -323,12 +336,12 @@ export default {
   },
   watch: {
     //监察路径变化,改变菜单的高亮
-    "$route.path": function(o, n) {
+    "$route.path": function (o, n) {
       this.activeMenu = o;
       //如果没有该标签就创建改标签
       let flag = false;
       //判断是否含有改标签
-      this.tags.map(item => {
+      this.tags.map((item) => {
         if (item.url === this.activeMenu) {
           //如果有含有该标签
           flag = true;
@@ -340,7 +353,7 @@ export default {
         this.createHighlightTag();
       } else {
         //改标签存在,则高亮
-        this.tags.map(item => {
+        this.tags.map((item) => {
           //取消高亮别的标签
           item.highlight = false;
           //高亮当前标签
@@ -349,9 +362,32 @@ export default {
           }
         });
       }
-    }
+    },
   },
   methods: {
+    //标准化头像URL
+    normalizeAvatar(url) {
+      if (!url) return "";
+
+      // 如果已经是完整URL（包括旧IP），尝试修复
+      if (url.includes("124.222.121.87")) {
+        try {
+          const urlObj = new URL(url);
+          return (
+            this.ImageAPI +
+            urlObj.pathname.replace(/^\/images\//, "").replace(/^\//, "")
+          );
+        } catch (e) {
+          // ignore
+        }
+      }
+
+      if (url.startsWith("http://") || url.startsWith("https://")) {
+        return url;
+      }
+
+      return this.ImageAPI + url;
+    },
     handleAvatarSuccess(res, file) {
       this.avatarUrl = URL.createObjectURL(file.raw);
       this.avatarUrl = this.ImageAPI + res.data;
@@ -366,46 +402,65 @@ export default {
     },
     //查看系统公告
     showSystemNotice() {
-      this.$http.get(this.API.getCurrentNewNotice).then(resp => {
+      this.$http.get(this.API.getCurrentNewNotice).then((resp) => {
         if (resp.data.code === 200) {
           this.$alert(resp.data.data, "最新公告", {
             dangerouslyUseHTMLString: true,
             closeOnPressEscape: true,
-            lockScroll: false
+            lockScroll: false,
           });
         } else {
           this.$notify({
             title: "提示",
             message: "公告获取失败",
             type: "error",
-            duration: 2000
+            duration: 2000,
           });
         }
       });
     },
     //根据token后台判断用户权限,传递相对应的菜单
     getMenu() {
-      console.log('开始获取菜单...');
-      console.log('当前token:', localStorage.getItem('authorization'));
-      console.log('当前roleId:', localStorage.getItem('roleId'));
-      
-      this.$http.get(this.API.getMenuInfo).then(resp => {
-        console.log('菜单API响应:', resp.data);
-        if (resp.data.code === 200) {
-          console.log('菜单数据(原始):', resp.data.data);
-          this.menuInfo = JSON.parse(resp.data.data);
-          console.log('菜单数据(解析后):', this.menuInfo);
-          //根据链接创建不存在的tag标签并高亮
-          this.createHighlightTag();
-        } else {
-          //后台认证失败,跳转登录页面
-          console.error('获取菜单失败:', resp.data.message);
-          this.$message.error("权限认证失败");
-          this.$router.push("/");
-        }
-      }).catch(error => {
-        console.error('获取菜单请求失败:', error);
-      });
+      console.log("开始获取菜单...");
+      const cachedMenu = localStorage.getItem("menuInfo");
+
+      this.$http
+        .get(this.API.getMenuInfo)
+        .then((resp) => {
+          // 处理离线/排队响应
+          if (resp.status === 202 || (resp.data && resp.data.queued)) {
+            if (cachedMenu) {
+              console.log("离线模式：使用缓存菜单");
+              this.menuInfo = JSON.parse(cachedMenu);
+              this.createHighlightTag();
+            }
+            return;
+          }
+
+          if (resp.data.code === 200) {
+            this.menuInfo = JSON.parse(resp.data.data);
+            // 缓存菜单供离线使用
+            localStorage.setItem("menuInfo", resp.data.data);
+            this.createHighlightTag();
+          } else {
+            console.error("获取菜单失败:", resp.data.message);
+            // 尝试使用缓存
+            if (cachedMenu) {
+              this.menuInfo = JSON.parse(cachedMenu);
+              this.createHighlightTag();
+            } else {
+              this.$message.error("权限认证失败");
+              this.$router.push("/");
+            }
+          }
+        })
+        .catch((error) => {
+          console.error("获取菜单请求失败:", error);
+          if (cachedMenu) {
+            this.menuInfo = JSON.parse(cachedMenu);
+            this.createHighlightTag();
+          }
+        });
     },
     //放大缩小侧边栏
     changeIsCollapse() {
@@ -472,7 +527,7 @@ export default {
         this.logout();
       } else if (command === "personInfo") {
         this.updateCurrentUserDialog = true;
-        this.$http.get(this.API.getCurrentUser).then(resp => {
+        this.$http.get(this.API.getCurrentUser).then((resp) => {
           if (resp.data.code === 200) {
             resp.data.data.password = "";
             this.currentUserInfo2 = resp.data.data;
@@ -483,42 +538,72 @@ export default {
         });
       } else if (command === "faceRegister") {
         // 跳转到人脸注册页面
-        this.$router.push('/faceRegister');
+        this.$router.push("/faceRegister");
       } else if (command === "faceManage") {
         // 跳转到人脸管理页面
-        this.$router.push('/faceManage');
+        this.$router.push("/faceManage");
       }
     },
     //退出登录
     async logout() {
-      const resp = await this.$http.get(this.API.logout);
-      if (resp.data.code === 200) {
-        //退出成功
-        window.localStorage.removeItem("authorization");
-        //右侧提示通知
-        this.$notify({
-          title: "提示",
-          message: "注销成功",
-          type: "success",
-          duration: 2000
-        });
-        await this.$router.push("/");
-      } else {
-        //异常
-        this.$notify({
-          title: "提示",
-          message: "注销失败,服务器异常",
-          type: "error",
-          duration: 2000
-        });
+      try {
+        const resp = await this.$http.get(this.API.logout);
+        // 允许202 Queued状态也算作退出成功（本地退出）
+        if (resp.data.code === 200 || resp.status === 202 || resp.data.queued) {
+          this.performLocalLogout("注销成功");
+        } else {
+          this.$notify({
+            title: "提示",
+            message: "注销失败,服务器异常",
+            type: "error",
+            duration: 2000,
+          });
+        }
+      } catch (e) {
+        // 网络错误强制退出
+        this.performLocalLogout("离线注销成功");
       }
+    },
+    async performLocalLogout(msg) {
+      window.localStorage.clear(); // 清除所有缓存，包括菜单和用户信息
+      this.$notify({
+        title: "提示",
+        message: msg,
+        type: "success",
+        duration: 2000,
+      });
+      await this.$router.push("/");
     },
     //检查token获取其中的用户信息
     async getUserInfoByCheckToken() {
-      const resp = await this.$http.get(this.API.checkToken);
-      this.currentUserInfo = resp.data.data;
-      localStorage.setItem("userTrueName", this.currentUserInfo.trueName);
-      localStorage.setItem("username", this.currentUserInfo.username);
+      const cachedInfo = localStorage.getItem("currentUserInfo");
+      try {
+        const resp = await this.$http.get(this.API.checkToken);
+
+        // 离线/排队支持
+        if (resp.status === 202 || (resp.data && resp.data.queued)) {
+          if (cachedInfo) {
+            this.currentUserInfo = JSON.parse(cachedInfo);
+          }
+          return;
+        }
+
+        if (resp.data.data) {
+          this.currentUserInfo = resp.data.data;
+          localStorage.setItem("userTrueName", this.currentUserInfo.trueName);
+          localStorage.setItem("username", this.currentUserInfo.username);
+          // 缓存完整用户信息
+          localStorage.setItem(
+            "currentUserInfo",
+            JSON.stringify(this.currentUserInfo)
+          );
+        }
+      } catch (e) {
+        console.error("获取用户信息失败", e);
+        if (cachedInfo) {
+          this.currentUserInfo = JSON.parse(cachedInfo);
+        }
+      }
     },
     //关闭tag标签
     handleClose(index) {
@@ -542,7 +627,7 @@ export default {
       this.breadInfo.sub = curMenuName;
       //标签信息
       let flag = false; //当前是否有此菜单信息(防止无限点击,无线生成)
-      this.tags.map(item => {
+      this.tags.map((item) => {
         if (item.name === curMenuName) flag = true;
       });
       if (!flag) {
@@ -550,7 +635,7 @@ export default {
         this.tags.push({
           name: curMenuName,
           url: url,
-          highlight: true
+          highlight: true,
         });
       } //高亮菜单tag
       this.changeHighlightTag(curMenuName);
@@ -571,9 +656,9 @@ export default {
     createHighlightTag() {
       //根据链接创建不存在的tag标签并高亮
       let menuName;
-      this.menuInfo.map(item => {
+      this.menuInfo.map((item) => {
         if (item.submenu !== undefined) {
-          item.submenu.map(subItem => {
+          item.submenu.map((subItem) => {
             if (subItem.url === this.activeMenu) menuName = subItem.name;
           });
         }
@@ -582,10 +667,10 @@ export default {
         this.tags.push({
           name: menuName,
           url: this.activeMenu,
-          highlight: true
+          highlight: true,
         });
         //高亮对应的标签
-        this.tags.map(item => {
+        this.tags.map((item) => {
           if (item.url === window.location.hash.substring(1))
             this.changeHighlightTag(item.name);
         });
@@ -594,9 +679,9 @@ export default {
     //改变头部的面包屑信息
     changeTopBreakInfo(subMenuName) {
       let topMenuName;
-      this.menuInfo.map(item => {
+      this.menuInfo.map((item) => {
         if (item.submenu !== undefined) {
-          item.submenu.map(i2 => {
+          item.submenu.map((i2) => {
             if (i2.name === subMenuName) topMenuName = item.topMenuName;
           });
         }
@@ -611,13 +696,13 @@ export default {
     },
     //提供给子组件创建tag标签使用
     giveChildAddTag(menuName, url) {
-      this.tags.map(item => {
+      this.tags.map((item) => {
         item.highlight = false;
       });
       this.tags.push({
         name: menuName,
         url: url,
-        highlight: true
+        highlight: true,
       });
     },
     //提供给子组件修改tag标签使用
@@ -631,22 +716,22 @@ export default {
       this.tags.push({
         name: menuName,
         url: url,
-        highlight: true
+        highlight: true,
       });
     },
     //更新当前用户
     updateCurrentUser() {
-      this.$refs["updateUserForm"].validate(valid => {
+      this.$refs["updateUserForm"].validate((valid) => {
         if (valid) {
           this.$http
             .post(this.API.updateCurrentUser, this.currentUserInfo2)
-            .then(resp => {
+            .then((resp) => {
               if (resp.data.code === 200) {
                 this.$notify({
                   title: "提示",
                   message: resp.data.message,
                   type: "success",
-                  duration: 2000
+                  duration: 2000,
                 });
                 this.logout();
               }
@@ -655,8 +740,8 @@ export default {
           return false;
         }
       });
-    }
-  }
+    },
+  },
 };
 </script>
 
@@ -664,7 +749,7 @@ export default {
 .el-container {
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, #F7FAFC 0%, #EDF2F7 100%);
+  background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
 
   .el-menu {
     height: calc(100% - 64px) !important;
@@ -679,15 +764,19 @@ export default {
     margin: 8px 12px;
     border-radius: 14px;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    color: #4A5568;
-    
+    color: #4a5568;
+
     &:hover {
-      background: linear-gradient(135deg, rgba(56, 178, 172, 0.1) 0%, rgba(49, 151, 149, 0.1) 100%) !important;
+      background: linear-gradient(
+        135deg,
+        rgba(56, 178, 172, 0.1) 0%,
+        rgba(49, 151, 149, 0.1) 100%
+      ) !important;
       transform: translateX(5px);
       box-shadow: 0 4px 15px rgba(56, 178, 172, 0.15);
-      
+
       i {
-        color: #38B2AC !important;
+        color: #38b2ac !important;
         transform: scale(1.1);
       }
     }
@@ -705,18 +794,19 @@ export default {
 
   :deep(.el-card__header) {
     padding: 15px 20px;
-    background: linear-gradient(135deg, #38B2AC 0%, #319795 100%);
+    background: linear-gradient(135deg, #38b2ac 0%, #319795 100%);
     border-bottom: none;
     border-radius: 16px 16px 0 0;
-    
-    i, .el-breadcrumb {
+
+    i,
+    .el-breadcrumb {
       color: white !important;
     }
-    
+
     :deep(.el-breadcrumb__inner) {
       color: white !important;
     }
-    
+
     :deep(.el-breadcrumb__separator) {
       color: rgba(255, 255, 255, 0.8) !important;
     }
@@ -730,14 +820,15 @@ export default {
   background: transparent;
   transition: all 0.3s ease;
   animation: pulse 2s ease-in-out infinite;
-  
+
   &:hover {
     transform: rotate(360deg) scale(1.1);
   }
 }
 
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     box-shadow: 0 0 0 0 rgba(56, 178, 172, 0.6);
   }
   50% {
@@ -760,14 +851,18 @@ export default {
 }
 
 .el-menu-item.is-active {
-  background: linear-gradient(135deg, rgba(56, 178, 172, 0.15) 0%, rgba(49, 151, 149, 0.15) 100%) !important;
-  color: #38B2AC !important;
+  background: linear-gradient(
+    135deg,
+    rgba(56, 178, 172, 0.15) 0%,
+    rgba(49, 151, 149, 0.15) 100%
+  ) !important;
+  color: #38b2ac !important;
   box-shadow: 0 4px 15px rgba(56, 178, 172, 0.2);
   transform: translateX(5px);
 }
 
 .el-tag.active {
-  background: linear-gradient(135deg, #38B2AC 0%, #319795 100%) !important;
+  background: linear-gradient(135deg, #38b2ac 0%, #319795 100%) !important;
   border: none !important;
   color: white;
   box-shadow: 0 3px 10px rgba(56, 178, 172, 0.25);
@@ -782,19 +877,23 @@ export default {
   margin: 8px 12px;
   border-radius: 14px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  
+
   :deep(.el-tooltip) {
     display: flex !important;
     align-items: center !important;
   }
-  
+
   &:hover {
-    background: linear-gradient(135deg, rgba(56, 178, 172, 0.1) 0%, rgba(49, 151, 149, 0.1) 100%) !important;
-    color: #38B2AC !important;
-    fill: #38B2AC;
+    background: linear-gradient(
+      135deg,
+      rgba(56, 178, 172, 0.1) 0%,
+      rgba(49, 151, 149, 0.1) 100%
+    ) !important;
+    color: #38b2ac !important;
+    fill: #38b2ac;
     transform: translateX(5px);
     box-shadow: 0 4px 15px rgba(56, 178, 172, 0.15);
-    
+
     i {
       color: white !important;
       transform: scale(1.1);
@@ -817,7 +916,7 @@ export default {
   font-size: 16px;
   color: white;
   transition: all 0.3s ease;
-  
+
   &:hover {
     opacity: 0.8;
   }
@@ -827,14 +926,14 @@ export default {
   border: none;
   border-radius: 10px;
   box-shadow: 0 2px 8px rgba(56, 178, 172, 0.12);
-  color: #2D3748;
+  color: #2d3748;
   font-weight: 500;
   text-align: center;
   margin-left: 10px;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   background: white;
-  
+
   &:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(56, 178, 172, 0.2);
@@ -842,35 +941,35 @@ export default {
 }
 
 .menu-header {
-  color: #2D3748;
+  color: #2d3748;
   display: flex;
   justify-content: center;
   align-items: center;
   padding: 0 !important;
   height: 64px;
   width: 100%;
-  background: linear-gradient(135deg, #ffffff 0%, #F7FAFC 100%) !important;
+  background: linear-gradient(135deg, #ffffff 0%, #f7fafc 100%) !important;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-  border-bottom: 1px solid #E2E8F0;
-  
+  border-bottom: 1px solid #e2e8f0;
+
   span {
     font-size: 18px;
     font-weight: 600;
     margin-left: 12px;
-    background: linear-gradient(135deg, #38B2AC 0%, #319795 100%);
+    background: linear-gradient(135deg, #38b2ac 0%, #319795 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
-  
+
   :deep(.el-tooltip) {
     padding: 0 !important;
   }
 }
 
 .active {
-  background: linear-gradient(135deg, #38B2AC 0%, #319795 100%) !important;
+  background: linear-gradient(135deg, #38b2ac 0%, #319795 100%) !important;
   color: white;
   box-shadow: 0 3px 10px rgba(56, 178, 172, 0.25);
 }
@@ -881,7 +980,7 @@ export default {
   transition: all 0.3s ease;
   overflow: hidden;
   border: none;
-  
+
   &:hover {
     box-shadow: 0 6px 25px rgba(56, 178, 172, 0.18);
   }
@@ -890,7 +989,7 @@ export default {
 .image {
   transition: all 0.3s ease;
   border: 2px solid rgba(255, 255, 255, 0.3);
-  
+
   &:hover {
     transform: scale(1.1);
     border-color: rgba(255, 255, 255, 0.6);
@@ -900,7 +999,7 @@ export default {
 #full {
   transition: all 0.3s ease;
   color: white;
-  
+
   &:hover {
     transform: scale(1.2);
     color: rgba(255, 255, 255, 0.8);
@@ -910,7 +1009,7 @@ export default {
 .el-icon-s-fold {
   transition: all 0.3s ease;
   color: white;
-  
+
   &:hover {
     transform: scale(1.2);
     color: rgba(255, 255, 255, 0.8);

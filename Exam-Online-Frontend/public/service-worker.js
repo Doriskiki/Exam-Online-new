@@ -1,7 +1,8 @@
 /* Service Worker for offline-first exam experience */
 importScripts("./sw-queue.js");
 
-const STATIC_CACHE = "exam-static-v1";
+const STATIC_CACHE = "exam-static-v2";
+const RUNTIME_CACHE = "exam-runtime-v1";
 const STATIC_ASSETS = ["/", "/index.html", "/config.js"];
 
 self.addEventListener("install", (event) => {
@@ -19,7 +20,14 @@ self.addEventListener("activate", (event) => {
       .keys()
       .then((keys) =>
         Promise.all(
-          keys.filter((k) => k !== STATIC_CACHE).map((k) => caches.delete(k))
+          keys
+            .filter(
+              (k) =>
+                k !== STATIC_CACHE &&
+                k !== RUNTIME_CACHE &&
+                !k.startsWith("exam-")
+            )
+            .map((k) => caches.delete(k))
         )
       )
       .then(() => self.clients.claim())
@@ -30,7 +38,7 @@ self.addEventListener("fetch", (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // Cache-first for static assets
+  // 1. Cache-first for static assets (App Shell)
   const isStatic =
     request.method === "GET" &&
     (STATIC_ASSETS.includes(url.pathname) ||
@@ -43,13 +51,94 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // API queue and replay
+  // 2. Runtime Caching for Fonts & Images (including Backend Images)
+  const isBackendImage =
+    url.origin.includes("localhost:8889") &&
+    url.pathname.startsWith("/images/");
+  const isGenericAsset =
+    /\.(png|jpg|jpeg|gif|svg|ico|avif|webp|woff|woff2|ttf|eot|otf)$/i.test(
+      url.pathname
+    );
+
+  if (request.method === "GET" && (isBackendImage || isGenericAsset)) {
+    event.respondWith(
+      caches.match(request).then((cached) => {
+        if (cached) return cached;
+        return fetch(request)
+          .then((response) => {
+            // Cache only valid responses (200 OK)
+            if (
+              !response ||
+              response.status !== 200 ||
+              (response.type !== "basic" && response.type !== "cors")
+            ) {
+              return response;
+            }
+            const responseToCache = response.clone();
+            caches.open(RUNTIME_CACHE).then((cache) => {
+              cache.put(request, responseToCache);
+            });
+            return response;
+          })
+          .catch((err) => {
+            return new Response("Offline", {
+              status: 404,
+              statusText: "Offline",
+            });
+          });
+      })
+    );
+    return;
+  }
+
+  // 3. API Handling
   const isApi =
     /\/common|\/teacher|\/student|\/admin|\/face/.test(url.pathname) ||
     url.origin.includes("localhost:8889");
-  if (!isApi) return; // non-api fall through
 
-  event.respondWith(handleApiRequest(request));
+  if (isApi) {
+    // GET requests: Network First -> Cache -> Local Fallback
+    if (request.method === "GET") {
+      event.respondWith(
+        caches.open("exam-api-cache").then((cache) => {
+          return fetch(request)
+            .then((res) => {
+              // Update cache if successful
+              if (res.ok) cache.put(request, res.clone());
+              return res;
+            })
+            .catch(() => {
+              return cache.match(request).then((cached) => {
+                if (cached) return cached;
+                // If neither network nor cache works, return a JSON error
+                return new Response(
+                  JSON.stringify({ code: 503, message: "Offline" }),
+                  {
+                    status: 503,
+                    headers: { "Content-Type": "application/json" },
+                  }
+                );
+              });
+            });
+        })
+      );
+      return;
+    }
+
+    // Non-GET requests (POST, PUT, etc.): background sync queue
+    event.respondWith(handleApiRequest(request));
+    return;
+  }
+
+  // 4. Default fallback
+  event.respondWith(
+    caches.match(request).then((cached) => {
+      if (cached) return cached;
+      return fetch(request).catch((err) => {
+        return new Response("Offline", { status: 404, statusText: "Offline" });
+      });
+    })
+  );
 });
 
 async function handleApiRequest(request) {
@@ -88,5 +177,13 @@ self.addEventListener("message", (event) => {
 
 async function cacheExamAssets(examId, urls) {
   const cache = await caches.open(`exam-${examId}`);
-  await cache.addAll(urls);
+  // Use Promise.all with catch to ensure valid assets are cached even if some fail
+  await Promise.all(
+    urls.map((url) =>
+      cache.add(url).catch((err) => {
+        // Suppress errors for missing assets (e.g., 404s)
+        // console.warn(`[SW] Failed to cache asset: ${url}`, err);
+      })
+    )
+  );
 }

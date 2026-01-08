@@ -22,28 +22,35 @@ function openDB() {
 }
 
 async function queueRequest(request) {
-  const db = await openDB();
-  const tx = db.transaction(STORE, "readwrite");
   const bodyNeeded = !["GET", "HEAD"].includes(request.method);
   const body = bodyNeeded ? await request.clone().arrayBuffer() : null;
-  tx.objectStore(STORE).add({
-    url: request.url,
-    method: request.method,
-    headers: Array.from(request.headers.entries()),
-    body,
-    attempt: 0,
-    requestId: crypto.randomUUID(),
-    createdAt: Date.now(),
-  });
-  await tx.complete;
 
-  if (self.registration && "sync" in self.registration) {
-    try {
-      await self.registration.sync.register("exam-sync");
-    } catch (e) {
-      // ignore registration errors; replay will be triggered on next fetch
+  const db = await openDB();
+  const tx = db.transaction(STORE, "readwrite");
+
+  return new Promise((resolve, reject) => {
+    const req = tx.objectStore(STORE).add({
+      url: request.url,
+      method: request.method,
+      headers: Array.from(request.headers.entries()),
+      body,
+      attempt: 0,
+      requestId: crypto.randomUUID(),
+      createdAt: Date.now(),
+    });
+
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+    req.onerror = () => reject(req.error);
+  }).then(async () => {
+    if (self.registration && "sync" in self.registration) {
+      try {
+        await self.registration.sync.register("exam-sync");
+      } catch (e) {
+        // ignore registration errors; replay will be triggered on next fetch
+      }
     }
-  }
+  });
 }
 
 async function replayQueuedRequests() {
