@@ -67,5 +67,6 @@ mybatis-plus:
 #  uploadDir: D:/Java/projects/exam_system-master/images/
 
 file:
-  uploadDir: C:/wwwroot/exam_system/server/images/
+  uploadDir: E:/code/Exam-Online-new/Exam-Online-Backend/images/
+#  uploadDir: C:/wwwroot/exam_system/server/images/
 #  uploadDir: D:/Java/projects/exam_system-master/images/

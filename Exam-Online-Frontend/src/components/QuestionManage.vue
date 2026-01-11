@@ -49,18 +49,120 @@
           @click="addQuTableVisible = true"
           >添加</el-button
         >
+        <!-- 性能优化演示开关 -->
+        <el-switch
+          v-model="isPerfMode"
+          active-color="#13ce66"
+          active-text="高性能模式(10w数据)"
+          inactive-text="普通模式"
+          @change="handlePerfSwitch"
+          style="margin-left: 20px"
+        >
+        </el-switch>
       </el-row>
     </el-header>
 
     <el-main>
+      <!-- 高性能模式视图：虚拟滚动 + 分片渲染 + Transition -->
+      <div
+        v-if="isPerfMode"
+        class="perf-view"
+        style="height: 100%; display: flex; flex-direction: column"
+      >
+        <div
+          class="perf-stats"
+          style="
+            padding: 10px;
+            background: #f4f6f8;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            font-size: 14px;
+          "
+        >
+          <span style="font-weight: bold; margin-right: 15px"
+            ><i class="el-icon-s-data"></i> 性能监控</span
+          >
+          <el-tag size="small" type="success"
+            >总数据量: {{ virtualTotal }}条</el-tag
+          >
+          <el-tag size="small" type="warning" style="margin-left: 10px"
+            >实际渲染DOM: {{ visibleData.length }}个</el-tag
+          >
+          <el-tag size="small" type="info" style="margin-left: 10px"
+            >策略: 分片加载 + 虚拟滚动</el-tag
+          >
+          <span
+            v-if="loadingProgress < 100"
+            style="margin-left: 20px; color: #409eff"
+          >
+            <i class="el-icon-loading"></i> 数据生成中... {{ loadingProgress }}%
+          </span>
+        </div>
+
+        <div
+          class="virtual-scroller"
+          ref="virtualScroller"
+          @scroll="onVirtualScroll"
+          style="
+            flex: 1;
+            overflow-y: auto;
+            position: relative;
+            border: 1px solid #ebeef5;
+          "
+        >
+          <!-- 幽灵高度撑开滚动条 -->
+          <div class="phantom" :style="{ height: listHeight + 'px' }"></div>
+          <!-- 实际渲染区域 -->
+          <div
+            class="content"
+            :style="{ transform: `translate3d(0, ${startOffset}px, 0)` }"
+          >
+            <transition-group name="list-anim" tag="div">
+              <div
+                v-for="item in visibleData"
+                :key="item.id"
+                class="virtual-row"
+                style="
+                  height: 50px;
+                  display: flex;
+                  align-items: center;
+                  padding: 0 20px;
+                  border-bottom: 1px solid #ebeef5;
+                  background: #fff;
+                  transition: all 0.5s;
+                "
+              >
+                <div style="width: 80px; font-weight: bold; color: #909399">
+                  #{{ item.id }}
+                </div>
+                <div style="flex: 1; font-family: monospace">
+                  {{ item.content }}
+                </div>
+                <div style="width: 150px">
+                  <el-tag size="mini" :type="item.typeColor">{{
+                    item.type
+                  }}</el-tag>
+                  <el-tag
+                    size="mini"
+                    :type="item.levelColor"
+                    style="margin-left: 5px"
+                    >{{ item.level }}</el-tag
+                  >
+                </div>
+              </div>
+            </transition-group>
+          </div>
+        </div>
+      </div>
+
       <!--操作的下拉框-->
       <el-select
         @change="operationChange"
         clearable
-        v-if="selectionTable.length !== 0"
+        v-if="!isPerfMode && selectionTable.length !== 0"
         v-model="operation"
         :placeholder="'已选择' + selectionTable.length + '项'"
-        style="margin-bottom: 25px;"
+        style="margin-bottom: 25px"
       >
         <el-option
           v-for="(item, index) in optionInfo"
@@ -75,6 +177,7 @@
       </el-select>
 
       <el-table
+        v-if="!isPerfMode"
         height="100%"
         ref="questionTable"
         highlight-current-row
@@ -82,7 +185,7 @@
         :border="true"
         :data="questionInfo"
         tooltip-effect="dark"
-        style="width: 100%;"
+        style="width: 100%"
         @selection-change="handleTableSectionChange"
       >
         <el-table-column align="center" type="selection" width="55">
@@ -282,14 +385,14 @@
             <el-table
               :data="updateQuForm.answer"
               border
-              style="width: 96%;margin-left: 40px;margin-top: 10px"
+              style="width: 96%; margin-left: 40px; margin-top: 10px"
             >
               <el-table-column label="是否答案" width="80" align="center">
                 <template slot-scope="scope">
                   <el-checkbox
                     v-model="scope.row.isTrue"
                     @change="
-                      checked => checkUpdateAnswer(checked, scope.row.id)
+                      (checked) => checkUpdateAnswer(checked, scope.row.id)
                     "
                     >答案
                   </el-checkbox>
@@ -308,7 +411,7 @@
                     :before-upload="beforeAvatarUpload"
                     list-type="picture"
                     :on-success="
-                      res => {
+                      (res) => {
                         return uploadUpdateAnswerImgSuccess(res, scope.row.id);
                       }
                     "
@@ -474,13 +577,13 @@
             <el-table
               :data="addQuForm.answer"
               border
-              style="width: 96%;margin-left: 40px;margin-top: 10px"
+              style="width: 96%; margin-left: 40px; margin-top: 10px"
             >
               <el-table-column label="是否答案" width="80" align="center">
                 <template slot-scope="scope">
                   <el-checkbox
                     v-model="scope.row.isTrue"
-                    @change="checked => checkAnswer(checked, scope.row.id)"
+                    @change="(checked) => checkAnswer(checked, scope.row.id)"
                     >答案
                   </el-checkbox>
                 </template>
@@ -497,7 +600,7 @@
                     :before-upload="beforeAvatarUpload"
                     list-type="picture"
                     :on-success="
-                      res => {
+                      (res) => {
                         return uploadAnswerImgSuccess(res, scope.row.id);
                       }
                     "
@@ -629,29 +732,29 @@ export default {
         questionBank: "",
         questionContent: "",
         pageNo: 1,
-        pageSize: 10
+        pageSize: 10,
       },
       uploadData: {
-        fileType: "question"
+        fileType: "question",
       },
       //题目类型
       questionType: [
         {
           id: 1,
-          name: "单选题"
+          name: "单选题",
         },
         {
           id: 2,
-          name: "多选题"
+          name: "多选题",
         },
         {
           id: 3,
-          name: "判断题"
+          name: "判断题",
         },
         {
           id: 4,
-          name: "简答题"
-        }
+          name: "简答题",
+        },
       ],
       //题库信息
       allBank: [],
@@ -665,16 +768,16 @@ export default {
       optionInfo: [
         {
           label: "删除",
-          desc: "delete"
+          desc: "delete",
         },
         {
           label: "加入题库",
-          desc: "add"
+          desc: "add",
         },
         {
           label: "题库中移除",
-          desc: "remove"
-        }
+          desc: "remove",
+        },
       ],
       //表格行被选中后的数据
       operation: "",
@@ -688,10 +791,10 @@ export default {
       addQuTableVisible: false,
       //添加题库的表单信息
       addForm: {
-        bankId: ""
+        bankId: "",
       },
       removeForm: {
-        bankId: ""
+        bankId: "",
       },
       //添加题库表单的验证
       addFormRules: {
@@ -699,9 +802,9 @@ export default {
           {
             required: true,
             message: "请选择需要添加进的题库",
-            trigger: "blur"
-          }
-        ]
+            trigger: "blur",
+          },
+        ],
       },
       //移除题库表单的验证
       removeFormRules: {
@@ -709,9 +812,9 @@ export default {
           {
             required: true,
             message: "请选择需要移除的题库",
-            trigger: "blur"
-          }
-        ]
+            trigger: "blur",
+          },
+        ],
       },
       //添加题目的表单信息
       addQuForm: {
@@ -723,7 +826,7 @@ export default {
         analysis: "",
         createPerson: localStorage.getItem("username"),
         //答案对象
-        answer: []
+        answer: [],
       },
       //添加题目表单的验证规则
       addQuFormRules: {
@@ -731,30 +834,30 @@ export default {
           {
             required: true,
             message: "请选择问题类型",
-            trigger: "blur"
-          }
+            trigger: "blur",
+          },
         ],
         questionLevel: [
           {
             required: true,
             message: "请选择问题难度",
-            trigger: "blur"
-          }
+            trigger: "blur",
+          },
         ],
         bankId: [
           {
             required: true,
             message: "请选择题库",
-            trigger: "blur"
-          }
+            trigger: "blur",
+          },
         ],
         questionContent: [
           {
             required: true,
             message: "请输入题库内容",
-            trigger: "blur"
-          }
-        ]
+            trigger: "blur",
+          },
+        ],
       },
       //更新题目表单的验证规则
       updateQuFormRules: {
@@ -762,30 +865,30 @@ export default {
           {
             required: true,
             message: "请选择问题类型",
-            trigger: "blur"
-          }
+            trigger: "blur",
+          },
         ],
         questionLevel: [
           {
             required: true,
             message: "请选择问题难度",
-            trigger: "blur"
-          }
+            trigger: "blur",
+          },
         ],
         bankId: [
           {
             required: true,
             message: "请选择题库",
-            trigger: "blur"
-          }
+            trigger: "blur",
+          },
         ],
         questionContent: [
           {
             required: true,
             message: "请输入题库内容",
-            trigger: "blur"
-          }
-        ]
+            trigger: "blur",
+          },
+        ],
       },
       //图片回显的样式
       backShowImgVisible: false,
@@ -802,20 +905,111 @@ export default {
         analysis: "",
         createPerson: localStorage.getItem("username"),
         //答案对象
-        answer: []
+        answer: [],
       },
       //是否显示更新题目的对话框
-      updateQuTableVisible: false
+      updateQuTableVisible: false,
+      // === 性能演示相关数据 ===
+      isPerfMode: false,
+      virtualList: [], // 完整 10w 条数据
+      itemHeight: 50, // 单行高度
+      screenHeight: 600, // 默认可视区高度
+      startOffset: 0, // 偏移量
+      loadingProgress: 0, // 加载进度
+      scrollState: { start: 0, end: 20 },
     };
+  },
+  computed: {
+    // 列表总高度 = 总数 * 每一项高度
+    listHeight() {
+      return this.virtualList.length * this.itemHeight;
+    },
+    // 可视区域的数据 = 截取 virtualList
+    visibleData() {
+      return this.virtualList.slice(
+        this.scrollState.start,
+        Math.min(this.scrollState.end, this.virtualList.length)
+      );
+    },
+    virtualTotal() {
+      return this.virtualList.length;
+    },
   },
   created() {
     this.getQuestionBankInfo();
     this.getQuestionInfo();
   },
   methods: {
+    // --- 性能模式相关方法 ---
+    handlePerfSwitch(val) {
+      if (val) {
+        this.generateHugeData();
+        this.$nextTick(() => {
+          if (this.$refs.virtualScroller) {
+            this.screenHeight = this.$refs.virtualScroller.clientHeight || 500;
+            this.onVirtualScroll({ target: this.$refs.virtualScroller });
+          }
+        });
+      } else {
+        this.virtualList = [];
+        this.loadingProgress = 0;
+      }
+    },
+    // 分片渲染（Time Slicing）
+    generateHugeData() {
+      this.loadingProgress = 0;
+      this.virtualList = [];
+      const total = 100000;
+      const chunkSize = 2000;
+      let idCounter = 1;
+      const addChunk = () => {
+        const chunkData = [];
+        for (let i = 0; i < chunkSize; i++) {
+          if (idCounter > total) break;
+          chunkData.push({
+            id: idCounter++,
+            content: `高性能测试题目数据 - 第 ${
+              idCounter - 1
+            } 条 - 模拟长列表渲染性能`,
+            // 随机类型
+            type: ["单选", "多选", "判断", "简答"][
+              Math.floor(Math.random() * 4)
+            ],
+            level: ["简单", "中等", "困难"][Math.floor(Math.random() * 3)],
+            typeColor: ["", "success", "warning", "danger"][
+              Math.floor(Math.random() * 4)
+            ],
+            levelColor: ["", "success", "danger"][
+              Math.floor(Math.random() * 3)
+            ],
+          });
+        }
+        this.virtualList = this.virtualList.concat(chunkData);
+        this.loadingProgress = Math.floor(
+          (this.virtualList.length / total) * 100
+        );
+        if (this.virtualList.length < total) {
+          requestAnimationFrame(addChunk); // 核心：使用 RAF 分片
+        } else {
+          this.$message.success("10万条数据生成完毕，列表依然丝滑！");
+        }
+      };
+      addChunk();
+    },
+    // 虚拟滚动计算
+    onVirtualScroll(e) {
+      const scrollTop = e.target.scrollTop;
+      this.scrollState.start = Math.floor(scrollTop / this.itemHeight);
+      this.scrollState.end =
+        this.scrollState.start +
+        Math.ceil(this.screenHeight / this.itemHeight) +
+        5;
+      this.startOffset = scrollTop - (scrollTop % this.itemHeight);
+    },
+
     //获取所有的题库信息
     getQuestionBankInfo() {
-      this.$http.get(this.API.getQuestionBank).then(resp => {
+      this.$http.get(this.API.getQuestionBank).then((resp) => {
         if (resp.data.code === 200) {
           this.allBank = resp.data.data;
         } else {
@@ -823,7 +1017,7 @@ export default {
             title: "提示",
             message: "获取题库信息失败",
             type: "error",
-            duration: 2000
+            duration: 2000,
           });
         }
       });
@@ -847,7 +1041,7 @@ export default {
     getQuestionInfo() {
       this.$http
         .get(this.API.getQuestion, { params: this.queryInfo })
-        .then(resp => {
+        .then((resp) => {
           if (resp.data.code === 200) {
             this.questionInfo = resp.data.data.questions;
             this.total = resp.data.data.total;
@@ -857,7 +1051,7 @@ export default {
               title: "提示",
               message: "获取题库信息失败",
               type: "error",
-              duration: 2000
+              duration: 2000,
             });
           }
         });
@@ -873,21 +1067,21 @@ export default {
 
       let questionIds = [];
       if (val === "delete") {
-        this.selectionTable.map(item => {
+        this.selectionTable.map((item) => {
           questionIds.push(item.id);
         });
         //发起删除请求
         this.$http
           .get(this.API.deleteQuestion, {
-            params: { questionIds: questionIds.join(",") }
+            params: { questionIds: questionIds.join(",") },
           })
-          .then(resp => {
+          .then((resp) => {
             if (resp.data.code === 200) {
               this.$notify({
                 title: "提示",
                 message: "删除成功",
                 type: "success",
-                duration: 2000
+                duration: 2000,
               });
               this.getQuestionInfo();
             } else {
@@ -895,7 +1089,7 @@ export default {
                 title: "提示",
                 message: "删除失败",
                 type: "error",
-                duration: 2000
+                duration: 2000,
               });
             }
           });
@@ -929,36 +1123,36 @@ export default {
     },
     //提交加入题库的表单信息
     addBank() {
-      this.$refs["addForm"].validate(valid => {
+      this.$refs["addForm"].validate((valid) => {
         if (valid) {
           let questionIds = [];
           let banks = this.addForm.bankId;
           //将表格选中的数据中的问题id加入进去
-          this.selectionTable.map(item => {
+          this.selectionTable.map((item) => {
             questionIds.push(item.id);
           });
           this.$http
             .get(this.API.addBankQuestion, {
               params: {
                 questionIds: questionIds.join(","),
-                banks: banks.join(",")
-              }
+                banks: banks.join(","),
+              },
             })
-            .then(resp => {
+            .then((resp) => {
               if (resp.data.code === 200) {
                 this.getQuestionInfo();
                 this.$notify({
                   title: "提示",
                   message: resp.data.message,
                   type: "success",
-                  duration: 2000
+                  duration: 2000,
                 });
               } else {
                 this.$notify({
                   title: "提示",
                   message: resp.data.message,
                   type: "error",
-                  duration: 2000
+                  duration: 2000,
                 });
               }
               this.addTableVisible = false;
@@ -971,12 +1165,12 @@ export default {
     },
     //提交移除题库的表单信息
     removeBank() {
-      this.$refs["removeForm"].validate(valid => {
+      this.$refs["removeForm"].validate((valid) => {
         if (valid) {
           let questionIds = [];
           let banks = this.removeForm.bankId;
           //将表格选中的数据中的问题id加入进去
-          this.selectionTable.map(item => {
+          this.selectionTable.map((item) => {
             questionIds.push(item.id);
           });
           //发起移除请求
@@ -984,24 +1178,24 @@ export default {
             .get(this.API.removeBankQuestion, {
               params: {
                 questionIds: questionIds.join(","),
-                banks: banks.join(",")
-              }
+                banks: banks.join(","),
+              },
             })
-            .then(resp => {
+            .then((resp) => {
               if (resp.data.code === 200) {
                 this.getQuestionInfo();
                 this.$notify({
                   title: "提示",
                   message: resp.data.message,
                   type: "success",
-                  duration: 2000
+                  duration: 2000,
                 });
               } else {
                 this.$notify({
                   title: "提示",
                   message: resp.data.message,
                   type: "error",
-                  duration: 2000
+                  duration: 2000,
                 });
               }
               this.removeTableVisible = false;
@@ -1064,7 +1258,7 @@ export default {
         isTrue: false,
         answer: "",
         images: [],
-        analysis: ""
+        analysis: "",
       });
     },
     //更新时新增题目中的新增答案填写框
@@ -1074,7 +1268,7 @@ export default {
         isTrue: false,
         answer: "",
         images: [],
-        analysis: ""
+        analysis: "",
       });
     },
     //新增题目中的删除答案填写框
@@ -1123,20 +1317,20 @@ export default {
         ) {
           //单选或者判断
           //当前已经有一个正确的选择了
-          this.addQuForm.answer.map(item => {
+          this.addQuForm.answer.map((item) => {
             item.isTrue = false;
           });
-          this.addQuForm.answer.map(item => {
+          this.addQuForm.answer.map((item) => {
             if (item.id === id) item.isTrue = true;
           });
         } else {
           //多选 可以有多个答案
-          this.addQuForm.answer.map(item => {
+          this.addQuForm.answer.map((item) => {
             if (item.id === id) item.isTrue = true;
           });
         }
       } else {
-        this.addQuForm.answer.map(item => {
+        this.addQuForm.answer.map((item) => {
           if (item.id === id) item.isTrue = false;
         });
       }
@@ -1150,34 +1344,34 @@ export default {
         ) {
           //单选或者判断
           //当前已经有一个正确的选择了
-          this.updateQuForm.answer.map(item => {
+          this.updateQuForm.answer.map((item) => {
             item.isTrue = false;
           });
-          this.updateQuForm.answer.map(item => {
+          this.updateQuForm.answer.map((item) => {
             if (item.id === id) item.isTrue = true;
           });
         } else {
           //多选 可以有多个答案
-          this.updateQuForm.answer.map(item => {
+          this.updateQuForm.answer.map((item) => {
             if (item.id === id) item.isTrue = true;
           });
         }
       } else {
-        this.updateQuForm.answer.map(item => {
+        this.updateQuForm.answer.map((item) => {
           if (item.id === id) item.isTrue = false;
         });
       }
     },
     //新增题目
     addQuestion() {
-      this.$refs["addQuForm"].validate(valid => {
+      this.$refs["addQuForm"].validate((valid) => {
         if (
           valid &&
-          this.addQuForm.answer.some(item => item.isTrue) &&
+          this.addQuForm.answer.some((item) => item.isTrue) &&
           this.addQuForm.questionType !== 4
         ) {
           //单选或者多选或者判断
-          this.$http.post(this.API.addQuestion, this.addQuForm).then(resp => {
+          this.$http.post(this.API.addQuestion, this.addQuForm).then((resp) => {
             if (resp.data.code === 200) {
               this.addQuTableVisible = false;
               this.getQuestionInfo();
@@ -1185,20 +1379,20 @@ export default {
                 title: "提示",
                 message: "新增题目成功",
                 type: "success",
-                duration: 2000
+                duration: 2000,
               });
             } else {
               this.$notify({
                 title: "提示",
                 message: resp.data.message,
                 type: "success",
-                duration: 2000
+                duration: 2000,
               });
             }
           });
         } else if (
           valid &&
-          !this.addQuForm.answer.some(item => item.isTrue) &&
+          !this.addQuForm.answer.some((item) => item.isTrue) &&
           this.addQuForm.questionType !== 4
         ) {
           //无答案
@@ -1208,7 +1402,7 @@ export default {
           //简答题 无标准答案直接发请求
           //当是简答题的时候需要清除answer
           this.addQuForm.answer = [];
-          this.$http.post(this.API.addQuestion, this.addQuForm).then(resp => {
+          this.$http.post(this.API.addQuestion, this.addQuForm).then((resp) => {
             if (resp.data.code === 200) {
               this.addQuTableVisible = false;
               this.getQuestionInfo();
@@ -1216,14 +1410,14 @@ export default {
                 title: "提示",
                 message: "新增题目成功",
                 type: "success",
-                duration: 2000
+                duration: 2000,
               });
             } else {
               this.$notify({
                 title: "提示",
                 message: resp.data.message,
                 type: "success",
-                duration: 2000
+                duration: 2000,
               });
             }
           });
@@ -1235,61 +1429,63 @@ export default {
     },
     //更新题目
     updateQu(id) {
-      this.$http.get(this.API.getQuestionById + "/" + id)
-        .then(resp => {
+      this.$http
+        .get(this.API.getQuestionById + "/" + id)
+        .then((resp) => {
           if (resp.data.code === 200) {
             if (resp.data.data.questionType !== 4) {
-              resp.data.data.answer.map(item => {
+              resp.data.data.answer.map((item) => {
                 item.isTrue = item.isTrue === "true";
               });
             }
             this.updateQuForm = resp.data.data;
             //处理图片那个参数是个数组
-            if (this.updateQuForm.images === null) this.updateQuForm.images = [];
+            if (this.updateQuForm.images === null)
+              this.updateQuForm.images = [];
 
             if (resp.data.data.questionType !== 4) {
-              this.updateQuForm.answer.map(item => {
-              if (item.images === null) {
-                item.images = [];
-              }
+              this.updateQuForm.answer.map((item) => {
+                if (item.images === null) {
+                  item.images = [];
+                }
+              });
+            }
+            this.updateQuTableVisible = true;
+          } else {
+            this.$notify({
+              title: "提示",
+              type: "error",
+              message: resp.data.message || "获取题目信息失败",
             });
           }
-          this.updateQuTableVisible = true;
-        } else {
+        })
+        .catch((error) => {
+          console.error("获取题目信息出错:", error);
           this.$notify({
-            title: "提示",
+            title: "错误",
             type: "error",
-            message: resp.data.message || "获取题目信息失败"
+            message: "题目可能已被删除或服务器出错，请刷新页面重试",
           });
-        }
-      })
-      .catch(error => {
-        console.error('获取题目信息出错:', error);
-        this.$notify({
-          title: "错误",
-          type: "error",
-          message: "题目可能已被删除或服务器出错，请刷新页面重试"
         });
-      });
     },
     //提交更新表单
     updateQuestion() {
-      this.$refs["updateQuForm"].validate(valid => {
+      this.$refs["updateQuForm"].validate((valid) => {
         if (
           valid &&
           this.updateQuForm.questionType !== 4 &&
-          this.updateQuForm.answer.some(item => item.isTrue)
+          this.updateQuForm.answer.some((item) => item.isTrue)
         ) {
           //单选或者多选或者判断
           //保证答案的图片只有一张
-          this.updateQuForm.answer.map(item => {
+          this.updateQuForm.answer.map((item) => {
             if (item.images.length > 1) {
               item.images.splice(0, item.images.length - 1);
             }
           });
           this.$http
             .post(this.API.updateQuestion, this.updateQuForm)
-            .then(resp => {
+            .then((resp) => {
               if (resp.data.code === 200) {
                 this.updateQuTableVisible = false;
                 this.getQuestionInfo();
@@ -1297,21 +1493,21 @@ export default {
                   title: "提示",
                   message: "更新题目成功",
                   type: "success",
-                  duration: 2000
+                  duration: 2000,
                 });
               } else {
                 this.$notify({
                   title: "提示",
                   message: resp.data.message,
                   type: "success",
-                  duration: 2000
+                  duration: 2000,
                 });
               }
             });
         } else if (
           valid &&
           this.updateQuForm.questionType !== 4 &&
-          !this.updateQuForm.answer.some(item => item.isTrue)
+          !this.updateQuForm.answer.some((item) => item.isTrue)
         ) {
           //无答案
           this.$message.error("必须有一个答案");
@@ -1322,7 +1518,7 @@ export default {
           this.addQuForm.answer = [];
           this.$http
             .post(this.API.updateQuestion, this.updateQuForm)
-            .then(resp => {
+            .then((resp) => {
               if (resp.data.code === 200) {
                 this.updateQuTableVisible = false;
                 this.getQuestionInfo();
@@ -1330,14 +1526,14 @@ export default {
                   title: "提示",
                   message: "更新题目成功",
                   type: "success",
-                  duration: 2000
+                  duration: 2000,
                 });
               } else {
                 this.$notify({
                   title: "提示",
                   message: resp.data.message,
                   type: "success",
-                  duration: 2000
+                  duration: 2000,
                 });
               }
             });
@@ -1346,16 +1542,16 @@ export default {
           return false;
         }
       });
-    }
+    },
   },
   computed: {
     //监测头部信息的token变化
     headers() {
       return {
-        authorization: localStorage.getItem("authorization") || ""
+        authorization: localStorage.getItem("authorization") || "",
       };
-    }
-  }
+    },
+  },
 };
 </script>
 
@@ -1380,8 +1576,6 @@ export default {
 .el-input {
   width: 200px;
 }
-
-
 
 @keyframes leftMoveIn {
   0% {
@@ -1441,5 +1635,16 @@ export default {
   :deep(.el-form-item__label) {
     padding-bottom: 0 !important;
   }
+}
+
+/* 性能优化Demo专用样式 */
+.list-anim-enter-active,
+.list-anim-leave-active {
+  transition: all 0.5s ease;
+}
+.list-anim-enter,
+.list-anim-leave-to {
+  opacity: 0;
+  transform: translateX(30px);
 }
 </style>
