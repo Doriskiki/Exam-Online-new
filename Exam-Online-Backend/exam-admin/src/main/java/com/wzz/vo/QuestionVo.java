@@ -5,7 +5,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * @Date 2020/10/26 19:22
  * @created by wzz
  */
 //前端文件上传的接受对象封装

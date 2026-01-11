@@ -35,7 +35,6 @@ import com.huacai.system.general.core.page.TableDataInfo;
  * 考试结果Controller
  *
  * @author huacai
- * @date 2025-09-30
  */
 @RestController
 @RequestMapping("/exam/er")

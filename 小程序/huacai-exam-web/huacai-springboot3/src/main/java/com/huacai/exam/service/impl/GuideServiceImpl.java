@@ -18,7 +18,6 @@ import org.springframework.util.CollectionUtils;
  * 学习指南Service业务层处理
  *
  * @author huacai
- * @date 2025-10-02
  */
 @Service
 public class GuideServiceImpl implements IGuideService {

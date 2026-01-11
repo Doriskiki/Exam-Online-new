@@ -10,7 +10,6 @@ import com.huacai.exam.domain.Eu;
  * 考试用户分配Mapper接口
  *
  * @author huacai
- * @date 2025-09-29
  */
 @Mapper
 public interface EuMapper

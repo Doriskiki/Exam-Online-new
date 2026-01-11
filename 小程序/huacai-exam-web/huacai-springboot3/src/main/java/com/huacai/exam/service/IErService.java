@@ -7,7 +7,6 @@ import com.huacai.exam.domain.Er;
  * 考试结果Service接口
  *
  * @author huacai
- * @date 2025-09-30
  */
 public interface IErService
 {

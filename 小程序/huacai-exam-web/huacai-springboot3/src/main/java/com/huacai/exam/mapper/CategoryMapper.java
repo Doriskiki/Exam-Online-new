@@ -8,7 +8,6 @@ import com.huacai.exam.domain.Category;
  * 题目分类Mapper接口
  *
  * @author huacai
- * @date 2025-09-25
  */
 @Mapper
 public interface CategoryMapper

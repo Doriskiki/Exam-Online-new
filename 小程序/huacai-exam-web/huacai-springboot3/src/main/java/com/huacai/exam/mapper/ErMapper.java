@@ -8,7 +8,6 @@ import com.huacai.exam.domain.Er;
  * 考试结果Mapper接口
  *
  * @author huacai
- * @date 2025-09-30
  */
 @Mapper
 public interface ErMapper

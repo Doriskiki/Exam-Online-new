@@ -13,6 +13,7 @@ import java.util.Date;
 import java.util.UUID;
 
 /**
+<<<<<<< HEAD
  * ============================================================
  * 技术亮点1: OSS 对象存储服务实现
  * ============================================================
@@ -29,14 +30,20 @@ import java.util.UUID;
  * - 利用CDN加速，降低后端IO压力
  * 
  * @Date 2020/10/26 10:25
+=======
+>>>>>>> origin/1/7
  * @created by wzz
  */
 @Component
 public class OSSUtil {
 
+<<<<<<< HEAD
     // ========== 阿里云OSS配置参数（从配置文件注入） ==========
     
     /** OSS服务端点（如：oss-cn-hangzhou.aliyuncs.com） */
+=======
+    // 阿里云配置
+>>>>>>> origin/1/7
     @Value("${aliyun.oss.endpoint}")
     private String aliEndpoint;
 
@@ -52,16 +59,13 @@ public class OSSUtil {
     @Value("${aliyun.oss.bucket-name}")
     private String aliBucketName;
 
-    /** 存储类型配置：aliyun（阿里云）、minio（私有化）、qiniu（七牛云），默认为aliyun */
+    // 存储类型配置: aliyun, minio, qiniu
     @Value("${upload.type:aliyun}")
     private String uploadType;
 
-    // ========== 静态变量，用于在静态方法中访问配置 ==========
+
     
-    /** 当前使用的存储类型 */
     private static String STORAGE_TYPE;
-    
-    /** 当前实例的引用，用于在静态方法中访问实例变量 */
     private static OSSUtil INSTANCE;
 
     /**
@@ -74,6 +78,7 @@ public class OSSUtil {
         INSTANCE = this;
     }
 
+<<<<<<< HEAD
     /**
      * ============================================================
      * 核心方法：统一的文件上传接口（策略模式）
@@ -146,10 +151,41 @@ public class OSSUtil {
             return ossClient.generatePresignedUrl(INSTANCE.aliBucketName, objectKey, expiration).toString();
         } finally {
             // 7. 关闭OSS客户端连接，释放资源
+=======
+    // 统一对外接口
+    public static String picOSS(MultipartFile uploadFile) throws Exception {
+        if ("minio".equalsIgnoreCase(STORAGE_TYPE)) {
+            return uploadToMinio(uploadFile);
+        } else if ("qiniu".equalsIgnoreCase(STORAGE_TYPE)) {
+            return uploadToQiniu(uploadFile);
+        } else {
+            return uploadToAliyun(uploadFile);
+        }
+    }
+
+    // 1. 阿里云 OSS 实现
+    private static String uploadToAliyun(MultipartFile uploadFile) throws Exception {
+        OSSClient ossClient = new OSSClient(INSTANCE.aliEndpoint, INSTANCE.aliAccessKeyId, INSTANCE.aliAccessKeySecret);
+        try {
+            SimpleDateFormat sf = new SimpleDateFormat("yyyy-MM-dd");
+            String date = sf.format(new Date());
+            String fileName = UUID.randomUUID().toString().substring(0, 5) + uploadFile.getOriginalFilename();
+            String objectKey = "uploads/" + date + "/" + fileName;
+
+            ObjectMetadata objectMetadata = new ObjectMetadata();
+            objectMetadata.setContentType(getcontentType(fileName.substring(fileName.lastIndexOf("."))));
+            
+            ossClient.putObject(INSTANCE.aliBucketName, objectKey, new ByteArrayInputStream(uploadFile.getBytes()), objectMetadata);
+            
+            Date expiration = new Date(new Date().getTime() + 3600L * 1000 * 24 * 365 * 10);
+            return ossClient.generatePresignedUrl(INSTANCE.aliBucketName, objectKey, expiration).toString();
+        } finally {
+>>>>>>> origin/1/7
             ossClient.shutdown();
         }
     }
 
+<<<<<<< HEAD
     /**
      * ============================================================
      * MinIO私有化存储实现（预留接口）
@@ -163,6 +199,10 @@ public class OSSUtil {
      */
     private static String uploadToMinio(MultipartFile uploadFile) throws Exception {
         // TODO: 实现MinIO上传逻辑
+=======
+    // 2. MinIO 实现
+    private static String uploadToMinio(MultipartFile uploadFile) throws Exception {
+>>>>>>> origin/1/7
         // MinioClient minioClient = MinioClient.builder().endpoint("http://localhost:9000").credentials("ak", "sk").build();
         // minioClient.putObject(...);
         // return minioClient.getPresignedObjectUrl(...);
@@ -170,6 +210,7 @@ public class OSSUtil {
         return "http://minio-mock-url/" + uploadFile.getOriginalFilename();
     }
 
+<<<<<<< HEAD
     /**
      * ============================================================
      * 七牛云存储实现（预留接口）
@@ -183,6 +224,10 @@ public class OSSUtil {
      */
     private static String uploadToQiniu(MultipartFile uploadFile) throws Exception {
         // TODO: 实现七牛云上传逻辑
+=======
+    // 3. 七牛云 实现 
+    private static String uploadToQiniu(MultipartFile uploadFile) throws Exception {
+>>>>>>> origin/1/7
         // UploadManager uploadManager = new UploadManager(new Configuration(Region.region0()));
         // uploadManager.put(...);
         // return "http://qiniu-domain/" + fileName;
@@ -190,6 +235,7 @@ public class OSSUtil {
         return "http://qiniu-mock-url/" + uploadFile.getOriginalFilename();
     }
 
+<<<<<<< HEAD
     /**
      * ============================================================
      * 根据文件扩展名获取Content-Type
@@ -206,6 +252,11 @@ public class OSSUtil {
      * @param FilenameExtension 文件扩展名（如.jpg、.png、.pdf）
      * @return 对应的MIME类型（Content-Type）
      */
+=======
+    //根据文件的类型 设置请求头
+
+    //根据文件的类型 设置请求头
+>>>>>>> origin/1/7
     public static String getcontentType(String FilenameExtension) {
         // 图片类型
         if (FilenameExtension.equalsIgnoreCase(".bmp")) {

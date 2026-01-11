@@ -18,7 +18,6 @@ import org.springframework.util.CollectionUtils;
  * 试题Service业务层处理
  *
  * @author huacai
- * @date 2025-09-27
  */
 @Service
 public class EqServiceImpl implements IEqService {

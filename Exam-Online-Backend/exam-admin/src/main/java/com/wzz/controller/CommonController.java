@@ -31,7 +31,6 @@ import java.util.Random;
 import java.util.UUID;
 
 /**
- * @Date 2020/10/20 8:50
  * @created by wzz
  * 通用接口
  */

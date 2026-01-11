@@ -20,7 +20,6 @@ import static com.huacai.system.general.utils.SecurityUtils.getUserId;
  * 考试结果Service业务层处理
  *
  * @author huacai
- * @date 2025-09-30
  */
 @Service
 public class ErServiceImpl implements IErService {

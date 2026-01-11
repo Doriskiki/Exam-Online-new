@@ -10,7 +10,6 @@ import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spring.web.plugins.Docket;
 
 /**
- * @Date 2020/10/20 9:43
  * @created by wzz
  */
 @Configuration //在springboot中加载配置文件

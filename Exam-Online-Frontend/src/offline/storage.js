@@ -1,6 +1,6 @@
 import { openDB } from "idb";
 
-const DB_NAME = "exam-offline";
+const DB_NAME = "exam-answers-data";
 const VERSION = 1;
 const ANSWER_STORE = "answers";
 

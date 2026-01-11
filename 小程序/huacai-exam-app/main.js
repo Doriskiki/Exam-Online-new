@@ -1,20 +1,40 @@
+// Monkey patch to resolve WeChat DevTools error: "code must be either 1000, or between 3000 and 4999. 1006 is neither"
+if (typeof wx !== "undefined" && wx.connectSocket) {
+  const originalConnectSocket = wx.connectSocket;
+  wx.connectSocket = function (options) {
+    const socketTask = originalConnectSocket.call(this, options);
+    const originalClose = socketTask.close;
+    socketTask.close = function (opts = {}) {
+      if (opts.code === 1006) {
+        opts.code = 1000; // Force valid code
+      }
+      return originalClose.call(this, opts);
+    };
+    return socketTask;
+  };
+}
+
 //组件
-import App from './App'
-import store from './store' // store
-import directive from './directive' // directive
-import plugins from './plugins' // plugins
-import './permission' // permission
-import { parseTime, resetForm, addDateRange, handleTree, selectDictLabel, selectDictLabels, tansParams, uniappRules } from '@/utils/huacai'
-
+import App from "./App";
+import store from "./store"; // store
+import directive from "./directive"; // directive
+import plugins from "./plugins"; // plugins
+import "./permission"; // permission
 import {
-	useDict
-} from '@/utils/dict'
+  parseTime,
+  resetForm,
+  addDateRange,
+  handleTree,
+  selectDictLabel,
+  selectDictLabels,
+  tansParams,
+  uniappRules,
+} from "@/utils/huacai";
 
+import { useDict } from "@/utils/dict";
 
 //客户端渲染
-import {
-	createApp as createVueApp
-} from 'vue'
+import { createApp as createVueApp } from "vue";
 
 //服务器端渲染
 // import {
@@ -22,19 +42,19 @@ import {
 // } from 'vue'
 
 export function createApp() {
-	const app = createVueApp(App)
-	app.config.globalProperties.useDict = useDict
-	app.config.globalProperties.parseTime = parseTime
-	app.config.globalProperties.resetForm = resetForm
-	app.config.globalProperties.handleTree = handleTree
-	app.config.globalProperties.addDateRange = addDateRange
-	app.config.globalProperties.selectDictLabel = selectDictLabel
-	app.config.globalProperties.selectDictLabels = selectDictLabels
-	app.config.globalProperties.tansParams = tansParams
-	app.config.globalProperties.uniappRules = uniappRules
-	app.use(store)
-	app.use(plugins)
-	// app.use(directive)
-	directive(app)
-	return {app}
+  const app = createVueApp(App);
+  app.config.globalProperties.useDict = useDict;
+  app.config.globalProperties.parseTime = parseTime;
+  app.config.globalProperties.resetForm = resetForm;
+  app.config.globalProperties.handleTree = handleTree;
+  app.config.globalProperties.addDateRange = addDateRange;
+  app.config.globalProperties.selectDictLabel = selectDictLabel;
+  app.config.globalProperties.selectDictLabels = selectDictLabels;
+  app.config.globalProperties.tansParams = tansParams;
+  app.config.globalProperties.uniappRules = uniappRules;
+  app.use(store);
+  app.use(plugins);
+  // app.use(directive)
+  directive(app);
+  return { app };
 }

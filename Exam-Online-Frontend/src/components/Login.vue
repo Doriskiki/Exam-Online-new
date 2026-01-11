@@ -42,7 +42,7 @@
                 src="http://localhost:8889/util/getCodeImg"
                 @click="changeCode"
                 id="code"
-                style="float: right;margin-top: 4px;cursor: pointer"
+                style="float: right; margin-top: 4px; cursor: pointer"
                 title="看不清,点击刷新"
                 alt="验证码"
               />
@@ -85,7 +85,7 @@ export default {
         username: "",
         password: "",
         //验证码
-        code: ""
+        code: "",
       },
       //登录表单的校验规则
       loginFormRules: {
@@ -93,35 +93,35 @@ export default {
           {
             required: true,
             message: "请输入账号",
-            trigger: "blur"
-          }
+            trigger: "blur",
+          },
         ],
         password: [
           {
             required: true,
             message: "请输入密码",
-            trigger: "blur"
+            trigger: "blur",
           },
           {
             min: 5,
             message: "密码不能小于5个字符",
-            trigger: "blur"
-          }
+            trigger: "blur",
+          },
         ],
         code: [
           {
             required: true,
             message: "请输入验证码",
-            trigger: "blur"
+            trigger: "blur",
           },
           {
             validator: validateCode,
-            trigger: "blur"
-          }
-        ]
+            trigger: "blur",
+          },
+        ],
       },
       //后台的验证码
-      code: (window.onload = () => this.getCode())
+      code: (window.onload = () => this.getCode()),
     };
   },
   mounted() {
@@ -132,68 +132,77 @@ export default {
   methods: {
     //表单信息提交
     submitForm() {
-      this.$refs["loginForm"].validate(valid => {
+      this.$refs["loginForm"].validate((valid) => {
         if (valid) {
           //验证通过
-          console.log('准备登录，账号:', this.loginForm.username);
+          console.log("准备登录，账号:", this.loginForm.username);
           const data = new FormData();
           data.append("username", this.loginForm.username);
           data.append("password", this.loginForm.password);
           //发送登录请求
-          this.$http.post(this.API.login, data).then(resp => {
-            console.log('登录响应:', resp.data);
+          this.$http.post(this.API.login, data).then((resp) => {
+            console.log("登录响应:", resp.data);
             if (resp.data.code === 200) {
               localStorage.setItem("authorization", resp.data.data);
-              
+
               // 获取并保存用户ID和角色信息
-              this.$http.get(this.API.checkToken).then(res => {
-                console.log('checkToken响应:', res.data);
-                if (res.data.code === 200) {
-                  const userData = res.data.data;
-                  console.log('用户数据:', userData);
-                  
-                  // 支持多种字段名
-                  const userId = userData.userId || userData.id;
-                  const roleId = userData.roleId || userData.role;
-                  const username = userData.username;
-                  
-                  if (userId) {
-                    localStorage.setItem("userId", userId);
-                    console.log('已保存用户ID:', userId);
-                  }
-                  if (roleId !== undefined) {
-                    localStorage.setItem("roleId", roleId);
-                    console.log('已保存角色ID:', roleId);
-                    
-                    // 显示角色信息
-                    let roleName = '未知';
-                    if (roleId === 1) roleName = '管理员';
-                    else if (roleId === 2) roleName = '教师';
-                    else if (roleId === 3) roleName = '学生';
-                    
-                    console.log('%c用户角色: ' + roleName, 'color: red; font-size: 16px; font-weight: bold;');
-                    
-                    // 如果不是管理员，给出提示
-                    if (roleId !== 1) {
-                      console.warn('当前登录的不是管理员账号！roleId =', roleId);
+              this.$http
+                .get(this.API.checkToken)
+                .then((res) => {
+                  console.log("checkToken响应:", res.data);
+                  if (res.data.code === 200) {
+                    const userData = res.data.data;
+                    console.log("用户数据:", userData);
+
+                    // 支持多种字段名
+                    const userId = userData.userId || userData.id;
+                    const roleId = userData.roleId || userData.role;
+                    const username = userData.username;
+
+                    if (userId) {
+                      localStorage.setItem("userId", userId);
+                      console.log("已保存用户ID:", userId);
                     }
-                  } else {
-                    console.error('无法获取角色ID！用户数据:', userData);
+                    if (roleId !== undefined) {
+                      localStorage.setItem("roleId", roleId);
+                      console.log("已保存角色ID:", roleId);
+
+                      // 显示角色信息
+                      let roleName = "未知";
+                      if (roleId === 1) roleName = "管理员";
+                      else if (roleId === 2) roleName = "教师";
+                      else if (roleId === 3) roleName = "学生";
+
+                      console.log(
+                        "%c用户角色: " + roleName,
+                        "color: red; font-size: 16px; font-weight: bold;"
+                      );
+
+                      // 如果不是管理员，给出提示
+                      if (roleId !== 1) {
+                        console.warn(
+                          "当前登录的不是管理员账号！roleId =",
+                          roleId
+                        );
+                      }
+                    } else {
+                      console.error("无法获取角色ID！用户数据:", userData);
+                    }
+                    if (username) {
+                      localStorage.setItem("username", username);
+                      console.log("已保存用户名:", username);
+                    }
                   }
-                  if (username) {
-                    localStorage.setItem("username", username);
-                    console.log('已保存用户名:', username);
-                  }
-                }
-              }).catch(error => {
-                console.error('获取用户信息失败:', error);
-              });
-              
+                })
+                .catch((error) => {
+                  console.error("获取用户信息失败:", error);
+                });
+
               this.$notify({
                 title: "提示",
                 message: "登陆成功^_^",
                 type: "success",
-                duration: 2000
+                duration: 2000,
               });
               this.$router.push("/index");
             } else {
@@ -204,7 +213,7 @@ export default {
                 title: "提示",
                 message: resp.data.message,
                 type: "error",
-                duration: 2000
+                duration: 2000,
               });
             }
           });
@@ -215,7 +224,7 @@ export default {
               title: "提示",
               message: "验证码输入有误",
               type: "error",
-              duration: 2000
+              duration: 2000,
             });
           }
           return false;
@@ -234,21 +243,35 @@ export default {
     },
     //获取后台验证码
     getCode() {
-      this.$http.get(this.API.getCode).then(resp => {
+      this.$http.get(this.API.getCode).then((resp) => {
         this.code = resp.data.message;
       });
     },
     //检验token
     async checkToken() {
-      if (window.localStorage.getItem("authorization") !== null) {
-        const resp = await this.$http.get(this.API.checkToken);
-        if (resp.data.code === 200) {
-          //如果token合法自动跳转主页
+      const token = window.localStorage.getItem("authorization");
+      if (token !== null) {
+        // PWA Offline Support: 如果离线且有Token，直接跳转主页
+        if (!navigator.onLine) {
           await this.$router.push("/index");
+          return;
+        }
+
+        try {
+          const resp = await this.$http.get(this.API.checkToken);
+          if (resp.data.code === 200) {
+            //如果token合法自动跳转主页
+            await this.$router.push("/index");
+          }
+        } catch (error) {
+          // 如果是网络错误（离线），尝试跳转
+          if (!navigator.onLine) {
+            await this.$router.push("/index");
+          }
         }
       }
-    }
-  }
+    },
+  },
 };
 </script>
 
@@ -256,7 +279,7 @@ export default {
 .el-container {
   min-width: 417px;
   height: 100%;
-  background: linear-gradient(135deg, #E0F9FF 0%, #B8F0FF 50%, #A0E8FF 100%);
+  background: linear-gradient(135deg, #e0f9ff 0%, #b8f0ff 50%, #a0e8ff 100%);
   background-size: 100% 100%;
   display: flex;
   align-items: center;
@@ -265,7 +288,7 @@ export default {
 
 a {
   text-decoration: none;
-  color: #00D9FF;
+  color: #00d9ff;
 }
 
 /*  card样式  */
@@ -285,13 +308,13 @@ a {
   transform: translateX(-50%) translateY(-50%);
   border-radius: 24px;
   border: 2px solid rgba(0, 217, 255, 0.1);
-  
+
   :deep(.el-card__header) {
-    background: linear-gradient(135deg, #00D9FF 0%, #4FD1C5 100%);
+    background: linear-gradient(135deg, #00d9ff 0%, #4fd1c5 100%);
     border-bottom: none;
     padding: 30px 20px;
   }
-  
+
   :deep(.el-card__body) {
     padding: 30px 40px;
   }
@@ -321,25 +344,25 @@ a {
   border-radius: 20px;
   transition: all 0.3s ease;
   border: none;
-  
+
   span {
     font-size: 16px;
     font-weight: bold !important;
     color: #ffffff;
   }
-  
+
   &.el-button--primary {
-    background: linear-gradient(135deg, #00D9FF 0%, #4FD1C5 100%);
-    
+    background: linear-gradient(135deg, #00d9ff 0%, #4fd1c5 100%);
+
     &:hover {
       transform: translateY(-2px);
       box-shadow: 0 6px 20px rgba(0, 217, 255, 0.4);
     }
   }
-  
+
   &.el-button--warning {
-    background: linear-gradient(135deg, #FFB84D 0%, #FF9A4D 100%);
-    
+    background: linear-gradient(135deg, #ffb84d 0%, #ff9a4d 100%);
+
     &:hover {
       transform: translateY(-2px);
       box-shadow: 0 6px 20px rgba(255, 184, 77, 0.4);
@@ -353,7 +376,7 @@ a {
 }
 :deep(.el-input__icon) {
   font-size: 18px;
-  color: #00D9FF;
+  color: #00d9ff;
 }
 
 /*  验证码的输入框*/
@@ -365,11 +388,11 @@ a {
   border-radius: 20px !important;
   padding-left: 40px;
   font-size: 16px;
-  border: 2px solid #E0F9FF;
+  border: 2px solid #e0f9ff;
   transition: all 0.3s ease;
-  
+
   &:focus {
-    border-color: #00D9FF;
+    border-color: #00d9ff;
     box-shadow: 0 0 0 3px rgba(0, 217, 255, 0.1);
   }
 }

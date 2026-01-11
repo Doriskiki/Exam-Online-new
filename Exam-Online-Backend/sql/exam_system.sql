@@ -9,8 +9,6 @@ Source Database       : exam_system
 Target Server Type    : MYSQL
 Target Server Version : 50724
 File Encoding         : 65001
-
-Date: 2021-02-08 14:17:55
 */
 
 SET FOREIGN_KEY_CHECKS=0;

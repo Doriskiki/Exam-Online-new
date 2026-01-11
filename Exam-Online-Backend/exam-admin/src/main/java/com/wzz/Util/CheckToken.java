@@ -12,7 +12,6 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.Objects;
 
 /**
- * @Date 2020/10/20 20:18
  * @created by wzz
  */
 public class CheckToken {

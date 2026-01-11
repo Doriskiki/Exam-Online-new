@@ -9,7 +9,6 @@ import java.awt.image.BufferedImage;
 import java.util.Random;
 
 /**
- * @Date 2020/10/19 20:54
  * @created by wzz
  * 生成验证码
  */

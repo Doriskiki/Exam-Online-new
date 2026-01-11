@@ -58,7 +58,7 @@
                   "
                 >
                   <img
-                    :src="url"
+                    :src="normalizeImageUrl(url)"
                     :data-key="curIndex + '_' + imgIndex"
                     title="点击查看大图"
                     alt="题目图片"
@@ -133,7 +133,7 @@
                       <img
                         v-for="(i2, i2Index) in item.images"
                         :key="i2Index"
-                        :src="i2"
+                        :src="normalizeImageUrl(i2)"
                         alt=""
                         title="点击查看大图"
                         @click.stop="showBigImg(i2)"
@@ -177,7 +177,7 @@
                       <img
                         v-for="(i2, i2Index) in item.images"
                         :key="i2Index"
-                        :src="i2"
+                        :src="normalizeImageUrl(i2)"
                         alt=""
                         title="点击查看大图"
                         @click.stop="showBigImg(i2)"
@@ -662,8 +662,46 @@ export default {
     },
     //点击展示高清大图
     showBigImg(url) {
-      this.bigImgUrl = url;
+      this.bigImgUrl = this.normalizeImageUrl(url);
       this.bigImgDialog = true;
+    },
+    //标准化图片URL，处理不同端口和协议
+    normalizeImageUrl(url) {
+      if (!url) return "";
+
+      // 修复：处理旧数据的硬编码IP，重定向到本地后端 /images/ 代理
+      // 将 http://124.222.121.87:8312/path 替换为 http://localhost:8889/images/path
+      if (typeof url === "string" && url.includes("124.222.121.87")) {
+        try {
+          const urlObj = new URL(url);
+          const baseUrl = this.$http.defaults.baseURL.replace(/\/$/, "");
+          // 旧系统路径可能直接在根目录下，新系统映射在 /images/ 下
+          return `${baseUrl}/images${urlObj.pathname}`;
+        } catch (e) {
+          console.error("URL解析失败:", url);
+        }
+      }
+
+      // 如果是完整的URL（阿里云OSS或其他外部URL），直接返回
+      if (url.startsWith("http://") || url.startsWith("https://")) {
+        return url;
+      }
+
+      // 如果是相对路径，构建完整URL
+      const baseUrl = this.$http.defaults.baseURL.replace(/\/$/, "");
+
+      // 如果URL已经包含/images/，直接拼接
+      if (url.startsWith("/images/")) {
+        return baseUrl + url;
+      }
+
+      // 如果URL以/开头但不包含/images/，添加/images前缀
+      if (url.startsWith("/")) {
+        return baseUrl + "/images" + url;
+      }
+
+      // 如果是相对路径（如 question/filename.jpg），添加/images/前缀
+      return baseUrl + "/images/" + url;
     },
     //图片加载失败处理
     handleImageError(e) {

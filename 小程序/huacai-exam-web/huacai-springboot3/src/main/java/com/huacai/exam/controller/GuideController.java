@@ -28,7 +28,6 @@ import com.huacai.system.general.core.page.TableDataInfo;
  * 学习指南Controller
  *
  * @author huacai
- * @date 2025-10-02
  */
 @RestController
 @RequestMapping("/exam/guide")

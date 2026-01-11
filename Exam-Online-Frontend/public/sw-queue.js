@@ -8,7 +8,8 @@ const MAX_RETRY = 6;
 
 function openDB() {
   return new Promise((resolve, reject) => {
-    const req = indexedDB.open(DB_NAME, 1);
+    // Increment version to ensure object store is created if missing
+    const req = indexedDB.open(DB_NAME, 2);
     req.onupgradeneeded = () => {
       const db = req.result;
       if (!db.objectStoreNames.contains(STORE)) {
@@ -21,6 +22,7 @@ function openDB() {
 }
 
 async function queueRequest(request) {
+<<<<<<< HEAD
   const db = await openDB();
   const tx = db.transaction(STORE, "readwrite");
   const bodyNeeded = !["GET", "HEAD"].includes(request.method);
@@ -43,6 +45,37 @@ async function queueRequest(request) {
       // ignore registration errors; replay will be triggered on next fetch
     }
   }
+=======
+  const bodyNeeded = !["GET", "HEAD"].includes(request.method);
+  const body = bodyNeeded ? await request.clone().arrayBuffer() : null;
+
+  const db = await openDB();
+  const tx = db.transaction(STORE, "readwrite");
+
+  return new Promise((resolve, reject) => {
+    const req = tx.objectStore(STORE).add({
+      url: request.url,
+      method: request.method,
+      headers: Array.from(request.headers.entries()),
+      body,
+      attempt: 0,
+      requestId: crypto.randomUUID(),
+      createdAt: Date.now(),
+    });
+
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+    req.onerror = () => reject(req.error);
+  }).then(async () => {
+    if (self.registration && "sync" in self.registration) {
+      try {
+        await self.registration.sync.register("exam-sync");
+      } catch (e) {
+        // ignore registration errors; replay will be triggered on next fetch
+      }
+    }
+  });
+>>>>>>> origin/1/7
 }
 
 async function replayQueuedRequests() {

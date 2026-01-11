@@ -12,7 +12,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.Objects;
 
 /**
- * @Date 2020/10/22 10:55
  * @created by wzz
  */
 //学生的拦截器(管理员和学生)
