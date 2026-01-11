@@ -28,7 +28,6 @@ import com.huacai.system.general.core.page.TableDataInfo;
  * 试题Controller
  *
  * @author huacai
- * @date 2025-09-27
  */
 @RestController
 @RequestMapping("/exam/eq")

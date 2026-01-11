@@ -7,7 +7,6 @@ import com.huacai.exam.domain.Guide;
  * 学习指南Service接口
  *
  * @author huacai
- * @date 2025-10-02
  */
 public interface IGuideService
 {

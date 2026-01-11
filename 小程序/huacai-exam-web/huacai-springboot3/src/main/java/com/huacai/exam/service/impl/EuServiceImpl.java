@@ -20,7 +20,6 @@ import org.springframework.util.CollectionUtils;
  * 考试用户分配Service业务层处理
  *
  * @author huacai
- * @date 2025-09-29
  */
 @Service
 public class EuServiceImpl implements IEuService {

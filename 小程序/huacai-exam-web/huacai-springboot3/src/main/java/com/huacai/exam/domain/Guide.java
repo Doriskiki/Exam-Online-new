@@ -8,7 +8,6 @@ import lombok.*;
  * 学习指南对象 guide
  *
  * @author huacai
- * @date 2025-10-02
  */
 @EqualsAndHashCode(callSuper = true)
 @Data

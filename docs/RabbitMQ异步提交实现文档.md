@@ -159,10 +159,10 @@
 
 ## 6. 关键代码位置
 
-- 发送端：`TeacherController.addExamRecord` [exam-admin/src/main/java/com/wzz/controller/TeacherController.java](Exam-Online-Backend/exam-admin/src/main/java/com/wzz/controller/TeacherController.java#L1093-L1121)
-- 消费端：`ExamSubmitConsumer.handleExamSubmit` [exam-admin/src/main/java/com/wzz/mq/ExamSubmitConsumer.java](Exam-Online-Backend/exam-admin/src/main/java/com/wzz/mq/ExamSubmitConsumer.java)
-- MQ 配置：`RabbitConfig` [exam-admin/src/main/java/com/wzz/config/RabbitConfig.java](Exam-Online-Backend/exam-admin/src/main/java/com/wzz/config/RabbitConfig.java)
-- 消息模型：`ExamSubmitMessage` [exam-admin/src/main/java/com/wzz/mq/ExamSubmitMessage.java](Exam-Online-Backend/exam-admin/src/main/java/com/wzz/mq/ExamSubmitMessage.java)
+- 发送端：`TeacherController.addExamRecord` [exam-admin/src/main/java/com/wzz/controller/TeacherController.java](../Exam-Online-Backend/exam-admin/src/main/java/com/wzz/controller/TeacherController.java#L1093-L1121)
+- 消费端：`ExamSubmitConsumer.handleExamSubmit` [exam-admin/src/main/java/com/wzz/mq/ExamSubmitConsumer.java](../Exam-Online-Backend/exam-admin/src/main/java/com/wzz/mq/ExamSubmitConsumer.java)
+- MQ 配置：`RabbitConfig` [exam-admin/src/main/java/com/wzz/config/RabbitConfig.java](../Exam-Online-Backend/exam-admin/src/main/java/com/wzz/config/RabbitConfig.java)
+- 消息模型：`ExamSubmitMessage` [exam-admin/src/main/java/com/wzz/mq/ExamSubmitMessage.java](../Exam-Online-Backend/exam-admin/src/main/java/com/wzz/mq/ExamSubmitMessage.java)
 
 ## 7. 遇到的问题与解决
 

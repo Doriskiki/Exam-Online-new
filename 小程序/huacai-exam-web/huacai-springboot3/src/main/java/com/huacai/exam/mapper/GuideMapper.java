@@ -8,7 +8,6 @@ import com.huacai.exam.domain.Guide;
  * 学习指南Mapper接口
  *
  * @author huacai
- * @date 2025-10-02
  */
 @Mapper
 public interface GuideMapper

@@ -7,7 +7,6 @@ import com.huacai.exam.domain.Eq;
  * 试题Service接口
  *
  * @author huacai
- * @date 2025-09-27
  */
 public interface IEqService
 {

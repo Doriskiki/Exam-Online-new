@@ -13,7 +13,6 @@ import java.util.Date;
 import java.util.UUID;
 
 /**
- * @Date 2020/10/26 10:25
  * @created by wzz
  */
 //阿里云上传的工具类

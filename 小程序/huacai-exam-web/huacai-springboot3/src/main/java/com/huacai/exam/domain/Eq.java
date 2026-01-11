@@ -8,7 +8,6 @@ import lombok.*;
  * 试题对象 eq
  *
  * @author huacai
- * @date 2025-09-27
  */
 @EqualsAndHashCode(callSuper = true)
 @Data

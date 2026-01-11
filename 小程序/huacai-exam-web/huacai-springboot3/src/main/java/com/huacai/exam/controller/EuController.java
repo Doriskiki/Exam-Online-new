@@ -28,7 +28,6 @@ import com.huacai.system.general.core.page.TableDataInfo;
  * 考试用户分配Controller
  *
  * @author huacai
- * @date 2025-09-29
  */
 @RestController
 @RequestMapping("/exam/eu")

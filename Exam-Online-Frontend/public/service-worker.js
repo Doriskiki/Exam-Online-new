@@ -1,9 +1,15 @@
 /* Service Worker for offline-first exam experience */
 importScripts("./sw-queue.js");
 
-const STATIC_CACHE = "exam-static-v2";
+const STATIC_CACHE = "exam-static-v3";
 const RUNTIME_CACHE = "exam-runtime-v1";
-const STATIC_ASSETS = ["/", "/index.html", "/config.js"];
+const STATIC_ASSETS = [
+  "/",
+  "/index.html",
+  "/config.js",
+  "/manifest.json",
+  "/logo.png",
+];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
